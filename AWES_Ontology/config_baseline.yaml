@@ -6,6 +6,8 @@ kite:
   type:
   version:
   wing:
+    mass:
+    area:
     sections:
       headers:
       data:
@@ -42,7 +44,6 @@ kite:
     version:
     bridle_point_node:
     pulley_mass:
-    kcu_mass:
     bridle_particles:
       headers:
       data:
@@ -65,6 +66,9 @@ kite:
       bridle_lines:
         headers:
         data:
+  kcu:
+    version:
+    mass:
 tether:
   version:
   length:
