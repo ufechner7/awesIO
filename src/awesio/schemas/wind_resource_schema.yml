@@ -1,0 +1,164 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: wind_resource_schema
+title: Wind Resource Data Schema
+description: Schema for wind resource clustering data
+type: object
+properties:
+  metadata:
+    type: object
+    properties:
+      n_clusters:
+        type: integer
+        minimum: 1
+      n_wind_speed_bins:
+        type: integer
+        minimum: 1
+      reference_height_m:
+        type: number
+      total_samples:
+        type: integer
+        minimum: 0
+      wind_speed_range_m_s:
+        type: array
+        items:
+          type: number
+        minItems: 2
+        maxItems: 2
+      data_source:
+        type: string
+      location:
+        type: object
+        properties:
+          latitude:
+            type: number
+            minimum: -90
+            maximum: 90
+          longitude:
+            type: number
+            minimum: -180
+            maximum: 180
+      time_range:
+        type: object
+        properties:
+          start_year:
+            type: integer
+          end_year:
+            type: integer
+          years:
+            type: array
+            items:
+              type: integer
+          years_included:
+            type: array
+            items:
+              type: integer
+      altitude_range_m:
+        type: array
+        items:
+          type: number
+        minItems: 2
+        maxItems: 2
+      clustering_parameters:
+        type: object
+        properties:
+          n_pcs:
+            type: integer
+          explained_variance:
+            type: array
+            items:
+              type: number
+          explained_variance_ratio:
+            type: number
+          method:
+            type: string
+          n_init:
+            type: integer
+          max_iter:
+            type: integer
+          random_state:
+            type: integer
+          fit_inertia:
+            type: number
+      time_created:
+        type: string
+    required:
+      - n_clusters
+      - n_wind_speed_bins
+      - reference_height_m
+      - total_samples
+      - wind_speed_range_m_s
+      - data_source
+      - altitude_range_m
+  altitudes:
+    type: array
+    items:
+      type: number
+    minItems: 1
+  wind_speed_bins:
+    type: object
+    properties:
+      bin_edges_m_s:
+        type: array
+        items:
+          type: number
+      bin_centers_m_s:
+        type: array
+        items:
+          type: number
+    required:
+      - bin_edges_m_s
+      - bin_centers_m_s
+  clusters:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        u_normalized:
+          type: array
+          items:
+            type: number
+        v_normalized:
+          type: array
+          items:
+            type: number
+      required:
+        - id
+        - u_normalized
+        - v_normalized
+    minItems: 1
+  probability_matrix:
+    type: object
+    properties:
+      description:
+        type: string
+      dimensions:
+        type: string
+      data:
+        oneOf:
+          - type: array
+            items:
+              type: array
+              items:
+                type: number
+            description: 2D matrix (n_clusters x n_wind_speed_bins)
+          - type: array
+            items:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+            description: 3D matrix (n_clusters x n_wind_speed_bins x n_wind_direction_bins)
+    required:
+      - description
+      - dimensions
+      - data
+required:
+  - metadata
+  - altitudes
+  - wind_speed_bins
+  - clusters
+  - probability_matrix
