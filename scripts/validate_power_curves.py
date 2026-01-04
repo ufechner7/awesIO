@@ -7,12 +7,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from awesio.validator import validate
 
 def main():
-    parser = argparse.ArgumentParser(description="Validate wind resource YAML files")
+    parser = argparse.ArgumentParser(description="Validate power curves YAML files")
     parser.add_argument(
         "file",
         nargs="?",
         default=None,
-        help="Path to wind resource YAML file to validate"
+        help="Path to power curves YAML file to validate"
     )
     parser.add_argument(
         "--restrictive",
@@ -23,20 +23,20 @@ def main():
     args = parser.parse_args()
     
     if args.file:
-        wind_resource_file = Path(args.file)
+        power_curves_file = Path(args.file)
     else:
-        wind_resource_file = Path(__file__).parent.parent / "examples" / "wind_resource.yml"
+        power_curves_file = Path(__file__).parent.parent / "examples" /  "power_curves.yml"
     
-    if not wind_resource_file.exists():
-        print(f"Error: File {wind_resource_file} not found.")
+    if not power_curves_file.exists():
+        print(f"Error: File {power_curves_file} not found.")
         sys.exit(1)
     
-    print(f"Validating {wind_resource_file}...")
+    print(f"Validating {power_curves_file}...")
     
     try:
         validate(
-            input=wind_resource_file,
-            schema_type="wind_resource_schema",
+            input=power_curves_file,
+            schema_type="power_curves_schema",
             restrictive=args.restrictive
         )
         print("Validation successful!")

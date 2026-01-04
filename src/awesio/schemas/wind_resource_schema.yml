@@ -13,6 +13,13 @@ properties:
       n_wind_speed_bins:
         type: integer
         minimum: 1
+      n_wind_direction_bins:
+        type: integer
+        minimum: 1
+      wind_direction_bin_width_deg:
+        type: number
+        minimum: 0
+        maximum: 360
       reference_height_m:
         type: number
       total_samples:
@@ -52,6 +59,15 @@ properties:
             type: array
             items:
               type: integer
+          months_included:
+            oneOf:
+              - type: string
+                enum: ["all"]
+              - type: array
+                items:
+                  type: integer
+                  minimum: 1
+                  maximum: 12
       altitude_range_m:
         type: array
         items:
@@ -79,6 +95,8 @@ properties:
             type: integer
           fit_inertia:
             type: number
+      note:
+        type: string
       time_created:
         type: string
     required:
@@ -108,6 +126,24 @@ properties:
     required:
       - bin_edges_m_s
       - bin_centers_m_s
+  wind_direction_bins:
+    type: object
+    properties:
+      bin_edges_deg:
+        type: array
+        items:
+          type: number
+          minimum: 0
+          maximum: 360
+      bin_centers_deg:
+        type: array
+        items:
+          type: number
+          minimum: 0
+          maximum: 360
+    required:
+      - bin_edges_deg
+      - bin_centers_deg
   clusters:
     type: array
     items:
@@ -156,6 +192,14 @@ properties:
       - description
       - dimensions
       - data
+  # Custom validation notes:
+  # - u_normalized and v_normalized arrays within each cluster must have the same length
+  # - u_normalized and v_normalized must have the same length as altitudes array
+  # - cluster id values must be unique and consecutive (1, 2, 3, ...)
+  # - probability_matrix data dimensions must match n_clusters x n_wind_speed_bins or n_clusters x n_wind_speed_bins x n_wind_direction_bins
+  # - bin_edges_m_s must have exactly n_wind_speed_bins + 1 elements
+  # - bin_centers_m_s must have exactly n_wind_speed_bins elements
+  # - Sum of probabilities in probability_matrix should equal 1.0 (within tolerance)
 required:
   - metadata
   - altitudes

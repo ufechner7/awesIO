@@ -1,0 +1,176 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: power_curves_schema
+title: Power Curves Data Schema
+description: Schema for AWES power curves data
+type: object
+properties:
+  metadata:
+    type: object
+    properties:
+      time_created:
+        type: string
+        format: date-time
+      model_config:
+        type: object
+        properties:
+          wing_area_m2:
+            type: number
+            minimum: 0
+          nominal_power_w:
+            type: number
+            minimum: 0
+          nominal_tether_force_n:
+            type: number
+            minimum: 0
+          cut_in_wind_speed_m_s:
+            type: number
+            minimum: 0
+          cut_out_wind_speed_m_s:
+            type: number
+            minimum: 0
+          operating_altitude_m:
+            type: number
+            minimum: 0
+          tether_length_operational_m:
+            type: number
+            minimum: 0
+        required:
+          - wing_area_m2
+          - nominal_power_w
+          - nominal_tether_force_n
+          - cut_in_wind_speed_m_s
+          - cut_out_wind_speed_m_s
+          - operating_altitude_m
+          - tether_length_operational_m
+        additionalProperties: false
+      wind_resource:
+        type: object
+        properties:
+          n_clusters:
+            type: integer
+            minimum: 1
+          reference_height_m:
+            type: number
+            minimum: 0
+          location:
+            type: object
+            properties:
+              latitude:
+                type: number
+                minimum: -90
+                maximum: 90
+              longitude:
+                type: number
+                minimum: -180
+                maximum: 180
+            required:
+              - latitude
+              - longitude
+            additionalProperties: false
+          data_source:
+            type: string
+        additionalProperties: false
+    required:
+      - time_created
+      - model_config
+    additionalProperties: false
+  altitudes_m:
+    type: array
+    items:
+      type: number
+      minimum: 0
+    minItems: 1
+    uniqueItems: true
+  reference_wind_speeds_m_s:
+    type: array
+    items:
+      type: number
+      minimum: 0
+    minItems: 1
+    uniqueItems: true
+  power_curves:
+    type: array
+    items:
+      type: object
+      properties:
+        profile_id:
+          type: integer
+          minimum: 1
+        speed_ratio_at_operating_altitude:
+          type: number
+          minimum: 0
+        u_normalized:
+          type: array
+          items:
+            type: number
+          minItems: 1
+        v_normalized:
+          type: array
+          items:
+            type: number
+          minItems: 1
+        probability_weight:
+          type: number
+          minimum: 0
+          maximum: 1
+        cycle_power_w:
+          type: array
+          items:
+            type: number
+            minimum: 0
+          minItems: 1
+        reel_out_power_w:
+          type: array
+          items:
+            type: number
+            minimum: 0
+          minItems: 1
+        reel_in_power_w:
+          type: array
+          items:
+            type: number
+          minItems: 1
+        reel_out_time_s:
+          type: array
+          items:
+            type: number
+            minimum: 0
+          minItems: 1
+        reel_in_time_s:
+          type: array
+          items:
+            type: number
+            minimum: 0
+          minItems: 1
+        cycle_time_s:
+          type: array
+          items:
+            type: number
+            minimum: 0
+          minItems: 1
+      required:
+        - profile_id
+        - speed_ratio_at_operating_altitude
+        - u_normalized
+        - v_normalized
+        - probability_weight
+        - cycle_power_w
+        - reel_out_power_w
+        - reel_in_power_w
+        - reel_out_time_s
+        - reel_in_time_s
+        - cycle_time_s
+      additionalProperties: false
+    minItems: 1
+  # Custom validation notes:
+  # - All arrays within each power_curve item must have the same length
+  # - u_normalized and v_normalized must have the same length as altitudes_m
+  # - All power and time arrays must have the same length as reference_wind_speeds_m_s
+  # - profile_id values must be unique across all power_curves
+  # - Sum of probability_weight across all power_curves should equal 1.0 (within tolerance)
+required:
+  - metadata
+  - altitudes_m
+  - reference_wind_speeds_m_s
+  - power_curves
+additionalProperties: false

@@ -50,7 +50,7 @@ def _get_YAML(
     read_include: bool = True,
     n_list_flow_style: int = 1,
 ) -> YAML:
-    """Get `ruamel.yaml.YAML` instance default setting for windIO
+    """Get `ruamel.yaml.YAML` instance default setting for AWESIO
 
     Args:
         typ (str, optional): ruamel.yaml.YAML `typ`. Defaults to "safe".
