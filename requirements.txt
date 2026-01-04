@@ -1,0 +1,6 @@
+numpy
+ruamel.yaml
+netCDF4
+xarray
+jsonschema
+referencing
