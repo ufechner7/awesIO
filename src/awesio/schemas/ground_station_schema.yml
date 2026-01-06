@@ -1,0 +1,70 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: ground_station_schema
+title: Ground Station Configuration Schema
+description: Schema for AWES ground station configuration including electrical efficiencies
+type: object
+properties:
+  metadata:
+    type: object
+    properties:
+      description:
+        type: string
+      note:
+        type: string
+    additionalProperties: true
+  electrical_efficiencies:
+    type: object
+    properties:
+      motor_controller:
+        type: object
+        properties:
+          self_consumption_w:
+            type: [number, "null"]
+            minimum: 0
+            description: Motor controller self-consumption in watts
+          efficiency:
+            type: [number, "null"]
+            minimum: 0
+            maximum: 1
+            description: Motor controller efficiency (0-1)
+        additionalProperties: false
+      dc_ac_converter:
+        type: object
+        properties:
+          self_consumption_w:
+            type: [number, "null"]
+            minimum: 0
+            description: DC/AC converter self-consumption in watts
+          efficiency:
+            type: [number, "null"]
+            minimum: 0
+            maximum: 1
+            description: DC/AC converter efficiency (0-1)
+        additionalProperties: false
+      external_battery:
+        type: object
+        properties:
+          connected:
+            type: boolean
+            description: Whether external battery is connected
+          self_consumption_w:
+            type: [number, "null"]
+            minimum: 0
+            description: External battery self-consumption in watts
+          efficiency:
+            type: [number, "null"]
+            minimum: 0
+            maximum: 1
+            description: External battery efficiency (0-1)
+        required:
+          - connected
+        additionalProperties: false
+    required:
+      - motor_controller
+      - dc_ac_converter
+      - external_battery
+    additionalProperties: false
+required:
+  - metadata
+  - electrical_efficiencies
+additionalProperties: false

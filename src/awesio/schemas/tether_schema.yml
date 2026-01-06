@@ -1,0 +1,43 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: tether_schema
+title: Tether Configuration Schema
+description: Schema for AWES tether physical properties and characteristics
+type: object
+properties:
+  metadata:
+    type: object
+    properties:
+      description:
+        type: string
+      note:
+        type: string
+    additionalProperties: true
+  tether:
+    type: object
+    properties:
+      length_m:
+        type: number
+        minimum: 0
+        description: Tether length in meters
+      diameter_m:
+        type: number
+        minimum: 0
+        description: Tether diameter in meters
+      density_kg_m3:
+        type: number
+        minimum: 0
+        description: Tether material density in kg per cubic meter
+      drag_coefficient:
+        type: number
+        minimum: 0
+        description: Tether drag coefficient
+    required:
+      - length_m
+      - diameter_m
+      - density_kg_m3
+      - drag_coefficient
+    additionalProperties: false
+required:
+  - metadata
+  - tether
+additionalProperties: false

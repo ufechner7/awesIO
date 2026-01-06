@@ -1,0 +1,65 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: airborne_schema
+title: Airborne System Configuration Schema
+description: Schema for AWES airborne system configuration including kite properties
+type: object
+properties:
+  metadata:
+    type: object
+    properties:
+      description:
+        type: string
+      note:
+        type: string
+    additionalProperties: true
+  kite:
+    type: object
+    properties:
+      mass_kg:
+        type: number
+        minimum: 0
+        description: Kite mass in kilograms
+      projected_area_m2:
+        type: number
+        minimum: 0
+        description: Kite projected area in square meters
+      drag_coefficient:
+        type: object
+        properties:
+          powered:
+            type: number
+            minimum: 0
+            description: Drag coefficient in powered state
+          depowered:
+            type: number
+            minimum: 0
+            description: Drag coefficient in depowered state
+        required:
+          - powered
+          - depowered
+        additionalProperties: false
+      lift_coefficient:
+        type: object
+        properties:
+          powered:
+            type: number
+            minimum: 0
+            description: Lift coefficient in powered state
+          depowered:
+            type: number
+            minimum: 0
+            description: Lift coefficient in depowered state
+        required:
+          - powered
+          - depowered
+        additionalProperties: false
+    required:
+      - mass_kg
+      - projected_area_m2
+      - drag_coefficient
+      - lift_coefficient
+    additionalProperties: false
+required:
+  - metadata
+  - kite
+additionalProperties: false
