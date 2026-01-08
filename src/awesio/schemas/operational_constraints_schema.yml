@@ -168,16 +168,5 @@ properties:
               - enabled
             additionalProperties: false
         additionalProperties: false
-    required:
-      - avg_elevation_deg
-      - max_azimuth_deg
-      - relative_elevation_deg
-      - force_limits_kgf
-      - speed_limits_m_s
-      - tether_stroke_m
-      - minimum_tether_length_m
     additionalProperties: false
-required:
-  - metadata
-  - bounds
 additionalProperties: false

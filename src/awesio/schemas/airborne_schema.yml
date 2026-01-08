@@ -53,13 +53,5 @@ properties:
           - powered
           - depowered
         additionalProperties: false
-    required:
-      - mass_kg
-      - projected_area_m2
-      - drag_coefficient
-      - lift_coefficient
     additionalProperties: false
-required:
-  - metadata
-  - kite
 additionalProperties: false

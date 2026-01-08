@@ -3,15 +3,21 @@ metadata:
   note: Configuration for AWE system ground station component
 
 electrical_efficiencies:
-  motor_controller:
+  generator:
     self_consumption_w: 0
-    efficiency:
+    efficiency: 0.95
 
   dc_ac_converter:
     self_consumption_w: 0
-    efficiency:
+    efficiency: 0.95
   
-  external_battery:
+  storage:
     connected: false
     self_consumption_w: 0
-    efficiency: 
+    efficiency: 0.95
+
+nominalTetherForce: 42000.0  # Maximum tether force [N]
+nominalGeneratorPower: 150000.0  # Maximum generator power [W]
+reelOutSpeedLimit: 10.0      # Maximum reel-out speed [m/s]
+reelInSpeedLimit: 18.0      # Maximum reel-in speed [m/s]
+

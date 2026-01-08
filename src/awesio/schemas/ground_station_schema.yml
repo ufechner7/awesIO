@@ -59,12 +59,5 @@ properties:
         required:
           - connected
         additionalProperties: false
-    required:
-      - motor_controller
-      - dc_ac_converter
-      - external_battery
     additionalProperties: false
-required:
-  - metadata
-  - electrical_efficiencies
 additionalProperties: false

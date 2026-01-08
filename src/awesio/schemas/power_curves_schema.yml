@@ -149,17 +149,9 @@ properties:
             minimum: 0
           minItems: 1
       required:
-        - profile_id
-        - speed_ratio_at_operating_altitude
         - u_normalized
         - v_normalized
-        - probability_weight
         - cycle_power_w
-        - reel_out_power_w
-        - reel_in_power_w
-        - reel_out_time_s
-        - reel_in_time_s
-        - cycle_time_s
       additionalProperties: false
     minItems: 1
   # Custom validation notes:

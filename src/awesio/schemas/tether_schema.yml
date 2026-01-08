@@ -31,13 +31,5 @@ properties:
         type: number
         minimum: 0
         description: Tether drag coefficient
-    required:
-      - length_m
-      - diameter_m
-      - density_kg_m3
-      - drag_coefficient
     additionalProperties: false
-required:
-  - metadata
-  - tether
 additionalProperties: false
