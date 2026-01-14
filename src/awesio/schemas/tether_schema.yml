@@ -1,19 +1,57 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: tether_schema
 title: Tether Configuration Schema
-description: Schema for AWES tether physical properties and characteristics
+description: Schema for all AWES tether configurations including conductive (fly-gen) and non-conductive (ground-gen) types
+
 type: object
+required:
+  - metadata
+  - tether
+
 properties:
   metadata:
     type: object
+    required:
+      - name
+      - description
+      - note
+      - awesIO_version
+      - schema
+      - tether_type
     properties:
+      name:
+        type: string
+        description: Human-readable name for this configuration
       description:
         type: string
+        description: Detailed description of the tether system
       note:
         type: string
-    additionalProperties: true
+        description: Additional notes or caveats about this configuration
+      awesIO_version:
+        type: string
+        description: Version of awesIO schema specification
+      schema:
+        type: string
+        const: tether_schema.yml
+        description: Reference to the schema file
+      tether_type:
+        type: string
+        enum:
+          - non_conducting_ground_gen
+          - conducting_fly_gen
+          - hybrid_conducting
+        description: Type of tether system
+    additionalProperties: false
+
   tether:
     type: object
+    required:
+      - length_m
+      - diameter_m
+      - density_kg_m3
+      - drag_coefficient
+      - conductive
     properties:
       length_m:
         type: number
@@ -22,14 +60,134 @@ properties:
       diameter_m:
         type: number
         minimum: 0
-        description: Tether diameter in meters
+        description: Tether outer diameter in meters
       density_kg_m3:
         type: number
         minimum: 0
-        description: Tether material density in kg per cubic meter
+        description: Tether effective density in kg per cubic meter
       drag_coefficient:
         type: number
         minimum: 0
         description: Tether drag coefficient
+      conductive:
+        type: boolean
+        description: Whether the tether contains electrical conductors
+      
+      # Structural properties (common to all types)
+      structural_line:
+        $ref: "#/definitions/structural_line"
+      
+      # Electrical conductors (conductive tethers only)
+      electrical_conductors:
+        $ref: "#/definitions/electrical_conductors"
+    
+    # Conditional validation based on conductive property
+    allOf:
+      - if:
+          properties:
+            conductive:
+              const: true
+        then:
+          required:
+            - electrical_conductors
+          properties:
+            electrical_conductors:
+              $ref: "#/definitions/electrical_conductors"
+      - if:
+          properties:
+            conductive:
+              const: false
+        then:
+          not:
+            required:
+              - electrical_conductors
+    
     additionalProperties: false
+
+definitions:
+  # Structural line properties
+  structural_line:
+    type: object
+    properties:
+      material:
+        type: string
+        enum:
+          - UHMWPE
+          - Dyneema
+          - Spectra
+          - Aramid
+          - Kevlar
+          - PBO
+          - Carbon_fiber
+          - Steel
+        description: Structural line material
+      breaking_strength_n:
+        type: number
+        minimum: 0
+        description: Breaking strength in Newtons
+      youngs_modulus_pa:
+        type: number
+        minimum: 0
+        description: Young's modulus in Pascals
+      creep_rate_percent_per_year:
+        type: number
+        minimum: 0
+        description: Creep rate in percent per year
+      fatigue_cycles:
+        type: integer
+        minimum: 0
+        description: Expected fatigue life in cycles
+    additionalProperties: false
+
+  # Electrical conductor properties (fly-gen tethers)
+  electrical_conductors:
+    type: object
+    required:
+      - number_of_conductors
+      - conductor_material
+      - cross_sectional_area_mm2_each
+      - max_current_a
+      - voltage_rating_v
+    properties:
+      number_of_conductors:
+        type: integer
+        minimum: 1
+        description: Number of electrical conductors
+      conductor_material:
+        type: string
+        enum:
+          - copper
+          - aluminum
+          - copper_clad_aluminum
+        description: Conductor material
+      cross_sectional_area_mm2_each:
+        type: number
+        minimum: 0
+        description: Cross-sectional area per conductor in mm²
+      resistance_ohm_per_km:
+        type: number
+        minimum: 0
+        description: Electrical resistance in Ohm per kilometer
+      max_current_a:
+        type: number
+        minimum: 0
+        description: Maximum current rating in Amperes
+      voltage_rating_v:
+        type: number
+        minimum: 0
+        description: Voltage rating in Volts
+      insulation_thickness_mm:
+        type: number
+        minimum: 0
+        description: Insulation thickness in millimeters
+      insulation_material:
+        type: string
+        description: Insulation material type
+      total_conductor_mass_fraction:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Mass fraction of conductors in total tether mass (0-1)
+    additionalProperties: false
+
 additionalProperties: false

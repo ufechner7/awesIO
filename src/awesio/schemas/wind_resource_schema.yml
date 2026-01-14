@@ -1,38 +1,83 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: wind_resource_schema
 title: Wind Resource Data Schema
-description: Schema for wind resource clustering data
+description: Schema for wind resource clustering data including location, time range, and cluster definitions
+
 type: object
+required:
+  - metadata
+  - altitudes
+  - wind_speed_bins
+  - clusters
+  - probability_matrix
+
 properties:
   metadata:
     type: object
+    required:
+      - name
+      - description
+      - note
+      - awesIO_version
+      - schema
+      - n_clusters
+      - n_wind_speed_bins
+      - reference_height_m
+      - total_samples
+      - wind_speed_range_m_s
+      - data_source
+      - altitude_range_m
     properties:
+      name:
+        type: string
+        description: Human-readable name for this wind resource dataset
+      description:
+        type: string
+        description: Detailed description of the wind resource data
+      note:
+        type: string
+        description: Additional notes or caveats about this data
+      awesIO_version:
+        type: string
+        description: Version of awesIO schema specification
+      schema:
+        type: string
+        const: wind_resource_schema.yml
+        description: Reference to the schema file
       n_clusters:
         type: integer
         minimum: 1
+        description: Number of wind profile clusters
       n_wind_speed_bins:
         type: integer
         minimum: 1
+        description: Number of wind speed bins
       n_wind_direction_bins:
         type: integer
         minimum: 1
+        description: Number of wind direction bins
       wind_direction_bin_width_deg:
         type: number
         minimum: 0
         maximum: 360
+        description: Wind direction bin width in degrees
       reference_height_m:
         type: number
+        description: Reference height in meters
       total_samples:
         type: integer
         minimum: 0
+        description: Total number of samples in dataset
       wind_speed_range_m_s:
         type: array
         items:
           type: number
         minItems: 2
         maxItems: 2
+        description: Wind speed range [min, max] in m/s
       data_source:
         type: string
+        description: Source of wind data (e.g., ERA5, MERRA2)
       location:
         type: object
         properties:
@@ -44,6 +89,7 @@ properties:
             type: number
             minimum: -180
             maximum: 180
+        description: Geographic location of the wind resource
       time_range:
         type: object
         properties:
@@ -68,12 +114,14 @@ properties:
                   type: integer
                   minimum: 1
                   maximum: 12
+        description: Time range of the wind data
       altitude_range_m:
         type: array
         items:
           type: number
         minItems: 2
         maxItems: 2
+        description: Altitude range [min, max] in meters
       clustering_parameters:
         type: object
         properties:
@@ -95,18 +143,13 @@ properties:
             type: integer
           fit_inertia:
             type: number
-      note:
-        type: string
+        description: Parameters used for wind profile clustering
       time_created:
         type: string
-    required:
-      - n_clusters
-      - n_wind_speed_bins
-      - reference_height_m
-      - total_samples
-      - wind_speed_range_m_s
-      - data_source
-      - altitude_range_m
+        description: Timestamp of data creation
+    additionalProperties: true
+    additionalProperties: true
+
   altitudes:
     type: array
     items:
@@ -192,6 +235,7 @@ properties:
       - description
       - dimensions
       - data
+
   # Custom validation notes:
   # - u_normalized and v_normalized arrays within each cluster must have the same length
   # - u_normalized and v_normalized must have the same length as altitudes array
@@ -200,9 +244,5 @@ properties:
   # - bin_edges_m_s must have exactly n_wind_speed_bins + 1 elements
   # - bin_centers_m_s must have exactly n_wind_speed_bins elements
   # - Sum of probabilities in probability_matrix should equal 1.0 (within tolerance)
-required:
-  - metadata
-  - altitudes
-  - wind_speed_bins
-  - clusters
-  - probability_matrix
+
+additionalProperties: false

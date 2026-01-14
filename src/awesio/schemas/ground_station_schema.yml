@@ -1,17 +1,310 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: ground_station_schema
 title: Ground Station Configuration Schema
-description: Schema for AWES ground station configuration including electrical efficiencies
+description: Schema for all AWES ground station configurations including pumping ground-gen, rotary ground-gen, and fly-gen systems
+
 type: object
+required:
+  - metadata
+  - ground_station
+
 properties:
   metadata:
     type: object
+    required:
+      - name
+      - description
+      - note
+      - awesIO_version
+      - schema
+      - ground_station_type
     properties:
+      name:
+        type: string
+        description: Human-readable name for this configuration
       description:
         type: string
+        description: Detailed description of the ground station system
       note:
         type: string
-    additionalProperties: true
+        description: Additional notes or caveats about this configuration
+      awesIO_version:
+        type: string
+        description: Version of awesIO schema specification
+      schema:
+        type: string
+        const: ground_station_schema.yml
+        description: Reference to the schema file
+      ground_station_type:
+        type: string
+        enum:
+          - pumping_ground_gen
+          - rotary_ground_gen
+          - fly_gen
+        description: Type of ground station system
+    additionalProperties: false
+
+  ground_station:
+    type: object
+    properties:
+      # Common ground station properties
+      location:
+        $ref: "#/definitions/location"
+      
+      # Winch systems (type-dependent)
+      drum_winch:
+        $ref: "#/definitions/drum_winch"
+      tensioning_winch:
+        $ref: "#/definitions/tensioning_winch"
+      
+      # Generator (ground-gen only)
+      generator:
+        $ref: "#/definitions/generator"
+      
+      # Power receiving station (fly-gen only)
+      power_receiving_station:
+        $ref: "#/definitions/power_receiving_station"
+      
+      # Electrical efficiencies (common)
+      electrical_efficiencies:
+        $ref: "#/definitions/electrical_efficiencies"
+      
+      # Control and safety systems (common)
+      control_system:
+        $ref: "#/definitions/control_system"
+      
+      # Launch and recovery system (common)
+      launch_recovery_system:
+        $ref: "#/definitions/launch_recovery_system"
+    
+    additionalProperties: false
+
+# Conditional validation based on metadata.ground_station_type
+allOf:
+  # Pumping ground-gen requires drum_winch and generator
+  - if:
+      properties:
+        metadata:
+          properties:
+            ground_station_type:
+              const: pumping_ground_gen
+    then:
+      properties:
+        ground_station:
+          required:
+            - drum_winch
+            - generator
+          not:
+            anyOf:
+              - required: [tensioning_winch]
+              - required: [power_receiving_station]
+  
+  # Rotary ground-gen requires generator
+  - if:
+      properties:
+        metadata:
+          properties:
+            ground_station_type:
+              const: rotary_ground_gen
+    then:
+      properties:
+        ground_station:
+          required:
+            - generator
+  
+  # Fly-gen requires tensioning_winch and power_receiving_station
+  - if:
+      properties:
+        metadata:
+          properties:
+            ground_station_type:
+              const: fly_gen
+    then:
+      properties:
+        ground_station:
+          required:
+            - tensioning_winch
+            - power_receiving_station
+          not:
+            anyOf:
+              - required: [drum_winch]
+              - required: [generator]
+
+definitions:
+  # Location definition
+  location:
+    type: object
+    properties:
+      latitude_deg:
+        type: number
+        minimum: -90
+        maximum: 90
+        description: Latitude in degrees
+      longitude_deg:
+        type: number
+        minimum: -180
+        maximum: 180
+        description: Longitude in degrees
+      altitude_m:
+        type: number
+        description: Altitude above sea level in meters
+    additionalProperties: false
+
+  # Drum winch (pumping ground-gen)
+  drum_winch:
+    type: object
+    required:
+      - max_tether_speed_m_s
+      - max_tether_force_n
+    properties:
+      max_tether_speed_m_s:
+        type: number
+        minimum: 0
+        description: Maximum tether reel-out/in speed in m/s
+      max_tether_force_n:
+        type: number
+        minimum: 0
+        description: Maximum tether force capacity in Newtons
+      drum_diameter_m:
+        type: number
+        minimum: 0
+        description: Drum diameter in meters
+      drum_width_m:
+        type: number
+        minimum: 0
+        description: Drum width in meters
+      motor_power_kw:
+        type: number
+        minimum: 0
+        description: Motor power rating in kilowatts
+      gear_ratio:
+        type: number
+        minimum: 0
+        description: Gearbox ratio
+      efficiency:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Winch mechanical efficiency (0-1)
+    additionalProperties: false
+
+  # Tensioning winch (fly-gen)
+  tensioning_winch:
+    type: object
+    required:
+      - max_tether_force_n
+    properties:
+      max_tether_force_n:
+        type: number
+        minimum: 0
+        description: Maximum tether force capacity in Newtons
+      nominal_tether_force_n:
+        type: number
+        minimum: 0
+        description: Nominal operating tether force in Newtons
+      tether_adjustment_speed_m_s:
+        type: number
+        minimum: 0
+        description: Maximum tether length adjustment speed in m/s
+      motor_power_kw:
+        type: number
+        minimum: 0
+        description: Motor power rating in kilowatts
+    additionalProperties: false
+
+  # Generator (ground-gen systems)
+  generator:
+    type: object
+    required:
+      - rated_power_kw
+    properties:
+      type:
+        type: string
+        enum:
+          - permanent_magnet_synchronous
+          - induction
+          - doubly_fed_induction
+          - wound_rotor_synchronous
+        description: Generator type
+      rated_power_kw:
+        type: number
+        minimum: 0
+        description: Rated power output in kilowatts
+      max_power_kw:
+        type: number
+        minimum: 0
+        description: Maximum power output in kilowatts
+      rated_speed_rpm:
+        type: number
+        minimum: 0
+        description: Rated rotational speed in RPM
+      efficiency:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Generator efficiency at rated power (0-1)
+      voltage_v:
+        type: number
+        minimum: 0
+        description: Output voltage in Volts
+    additionalProperties: false
+
+  # Power receiving station (fly-gen)
+  power_receiving_station:
+    type: object
+    required:
+      - rated_power_kw
+    properties:
+      rated_power_kw:
+        type: number
+        minimum: 0
+        description: Rated power receiving capacity in kilowatts
+      max_power_kw:
+        type: number
+        minimum: 0
+        description: Maximum power receiving capacity in kilowatts
+      input_voltage_v:
+        type: number
+        minimum: 0
+        description: Input voltage from tether in Volts
+      output_voltage_v:
+        type: number
+        minimum: 0
+        description: Output voltage to grid in Volts
+      power_electronics:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - ac_dc_dc_ac
+              - dc_dc
+              - ac_dc
+            description: Power electronics conversion type
+          efficiency:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: Power electronics efficiency (0-1)
+        additionalProperties: false
+      slip_ring:
+        type: object
+        properties:
+          type:
+            type: string
+            description: Slip ring type for tether rotation handling
+          max_current_a:
+            type: number
+            minimum: 0
+            description: Maximum current capacity in Amperes
+          max_rotation_rpm:
+            type: number
+            minimum: 0
+            description: Maximum rotation speed in RPM
+        additionalProperties: false
+    additionalProperties: false
+
+  # Electrical efficiencies (common)
   electrical_efficiencies:
     type: object
     properties:
@@ -19,11 +312,11 @@ properties:
         type: object
         properties:
           self_consumption_w:
-            type: [number, "null"]
+            type: number
             minimum: 0
             description: Motor controller self-consumption in watts
           efficiency:
-            type: [number, "null"]
+            type: number
             minimum: 0
             maximum: 1
             description: Motor controller efficiency (0-1)
@@ -32,14 +325,27 @@ properties:
         type: object
         properties:
           self_consumption_w:
-            type: [number, "null"]
+            type: number
             minimum: 0
             description: DC/AC converter self-consumption in watts
           efficiency:
-            type: [number, "null"]
+            type: number
             minimum: 0
             maximum: 1
             description: DC/AC converter efficiency (0-1)
+        additionalProperties: false
+      transformer:
+        type: object
+        properties:
+          self_consumption_w:
+            type: number
+            minimum: 0
+            description: Transformer self-consumption in watts
+          efficiency:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: Transformer efficiency (0-1)
         additionalProperties: false
       external_battery:
         type: object
@@ -48,16 +354,59 @@ properties:
             type: boolean
             description: Whether external battery is connected
           self_consumption_w:
-            type: [number, "null"]
+            type: number
             minimum: 0
             description: External battery self-consumption in watts
           efficiency:
-            type: [number, "null"]
+            type: number
             minimum: 0
             maximum: 1
             description: External battery efficiency (0-1)
+          capacity_kwh:
+            type: number
+            minimum: 0
+            description: Battery capacity in kilowatt-hours
         required:
           - connected
         additionalProperties: false
     additionalProperties: false
+
+  # Control system
+  control_system:
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - centralized
+          - distributed
+          - hybrid
+        description: Control architecture type
+      safety_features:
+        type: array
+        items:
+          type: string
+        description: List of safety features
+    additionalProperties: false
+
+  # Launch and recovery system
+  launch_recovery_system:
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - mast_based
+          - ground_based
+          - perched_landing
+          - net_based
+          - rotating_arm
+          - vertical_takeoff
+        description: Launch and recovery system type
+      max_wind_speed_m_s:
+        type: number
+        minimum: 0
+        description: Maximum wind speed for launch/recovery in m/s
+    additionalProperties: false
+
 additionalProperties: false

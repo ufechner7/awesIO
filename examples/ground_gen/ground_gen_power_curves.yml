@@ -1,4 +1,9 @@
 metadata:
+  name: Ground-Gen Power Curves
+  description: Power curves for pumping ground-gen AWE system
+  note: Power curve data generated from QSM model for 50kW nominal system
+  awesIO_version: 0.1.0
+  schema: power_curves_schema.yml
   time_created: '2025-12-31T12:54:53.175884'
   model_config:
     wing_area_m2: 20.0

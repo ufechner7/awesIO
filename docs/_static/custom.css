@@ -1,0 +1,66 @@
+/* Custom CSS for awesIO documentation */
+
+/* Schema iframe styling */
+iframe {
+    border: 1px solid #e1e4e5;
+    border-radius: 4px;
+    background: white;
+}
+
+/* Improve table readability */
+.wy-table-responsive table td,
+.wy-table-responsive table th {
+    white-space: normal;
+}
+
+/* Code block improvements */
+.highlight {
+    border-radius: 4px;
+}
+
+/* Note and warning box styling */
+.admonition {
+    border-radius: 4px;
+}
+
+/* Better list styling in tables */
+.wy-table-responsive table ul {
+    margin-bottom: 0;
+}
+
+/* Schema reference section styling */
+.schema-reference {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f8f8;
+    border-radius: 4px;
+}
+
+/* Version badge styling */
+.version-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #2980b9;
+    color: white;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+/* AWE-specific styling */
+.awe-component {
+    border-left: 4px solid #2980b9;
+    padding-left: 15px;
+    margin: 15px 0;
+}
+
+/* Math equation styling */
+.math {
+    overflow-x: auto;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    iframe {
+        height: 500px !important;
+    }
+}

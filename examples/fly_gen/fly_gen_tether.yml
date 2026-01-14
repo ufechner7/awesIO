@@ -1,0 +1,15 @@
+metadata:
+  name: Fly Gen Tether
+  description: Tether physical properties and characteristics for fly_gen systems
+  note: Configuration for AWE system tether component (conductive)
+  awesIO_version: 0.1.0
+  schema: tether_schema.yml
+  tether_type: conducting_fly_gen
+
+tether:
+  length_m: 400.0
+  diameter_m: 0.014
+  density_kg_m3: 617.13
+  drag_coefficient: 1.1
+  max_tether_force_n: 42000.0
+  conductive: true

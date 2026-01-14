@@ -1,4 +1,9 @@
 metadata:
+  name: ERA5 Wind Resource Data
+  description: Wind resource data for offshore location near Netherlands
+  note: Wind resource clustering data from ERA5 reanalysis for AWE site assessment
+  awesIO_version: 0.1.0
+  schema: wind_resource_schema.yml
   n_clusters: 8
   n_wind_speed_bins: 50
   n_wind_direction_bins: 36

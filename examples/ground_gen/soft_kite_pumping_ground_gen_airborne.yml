@@ -1,0 +1,63 @@
+metadata:
+  name: Soft Kite Pumping Ground-Gen Airborne System
+  description: Example airborne config for a 100kW soft kite pumping ground gen system
+  note: This configuration is for awesIO development purposes only and does not represent a real-world system.
+  awesIO_version: 0.1.0
+  schema: airborne_schema.yml
+  airborne_type: LEI_soft_kite
+  generation_type: pumping_ground_gen
+
+total_mass_kg: 12.0
+
+components:
+  wing:
+    type: LEI_soft_kite
+    projected_surface_area_m2: 60.0
+    aspect_ratio: 6.0
+    mass_kg: 8.0
+    bridle_height_m: 4.0
+    flattening_factor: 0.9
+    lift_coefficient_reel_out: 1.2
+    drag_coefficient_reel_out: 0.05
+    lift_coefficient_reel_in: 0.8
+    drag_coefficient_reel_in: 0.1
+
+    lift_polars:
+      - angle_of_attack_deg: -5.0
+        lift_coefficient: -0.4
+      - angle_of_attack_deg: 0.0
+        lift_coefficient: 0.0
+      - angle_of_attack_deg: 5.0
+        lift_coefficient: 0.6
+      - angle_of_attack_deg: 10.0
+        lift_coefficient: 1.0
+      - angle_of_attack_deg: 15.0
+        lift_coefficient: 1.2
+    drag_polars:
+      - angle_of_attack_deg: -5.0
+        drag_coefficient: 0.1
+      - angle_of_attack_deg: 0.0
+        drag_coefficient: 0.05
+      - angle_of_attack_deg: 5.0
+        drag_coefficient: 0.08
+      - angle_of_attack_deg: 10.0
+        drag_coefficient: 0.12
+      - angle_of_attack_deg: 15.0
+        drag_coefficient: 0.2
+    geometry:
+      span_m: 18.0
+
+    material_properties:
+      canopy_material: ripstop_nylon
+      leading_edge_material: TPU_bladder
+
+  bridle:
+    type: LEI_soft_kite_bridle
+    mass_kg: 1.0    
+      
+  control_system:
+    type: kcu
+    mass_kg: 4.0
+    drag_coefficient: 1.0
+    frontal_area_m2: 0.5
+

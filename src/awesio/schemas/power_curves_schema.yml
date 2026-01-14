@@ -1,15 +1,46 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: power_curves_schema
 title: Power Curves Data Schema
-description: Schema for AWES power curves data
+description: Schema for AWES power curves data including cluster-specific power outputs
+
 type: object
+required:
+  - metadata
+  - altitudes_m
+  - reference_wind_speeds_m_s
+  - power_curves
+
 properties:
   metadata:
     type: object
+    required:
+      - name
+      - description
+      - note
+      - awesIO_version
+      - schema
+      - time_created
+      - model_config
     properties:
+      name:
+        type: string
+        description: Human-readable name for this power curves dataset
+      description:
+        type: string
+        description: Detailed description of the power curves data
+      note:
+        type: string
+        description: Additional notes or caveats about this data
+      awesIO_version:
+        type: string
+        description: Version of awesIO schema specification
+      schema:
+        type: string
+        const: power_curves_schema.yml
+        description: Reference to the schema file
       time_created:
         type: string
-        format: date-time
+        description: Timestamp of data creation
       model_config:
         type: object
         properties:
@@ -70,10 +101,7 @@ properties:
           data_source:
             type: string
         additionalProperties: false
-    required:
-      - time_created
-      - model_config
-    additionalProperties: false
+    additionalProperties: true
   altitudes_m:
     type: array
     items:
@@ -154,15 +182,12 @@ properties:
         - cycle_power_w
       additionalProperties: false
     minItems: 1
+
   # Custom validation notes:
   # - All arrays within each power_curve item must have the same length
   # - u_normalized and v_normalized must have the same length as altitudes_m
   # - All power and time arrays must have the same length as reference_wind_speeds_m_s
   # - profile_id values must be unique across all power_curves
   # - Sum of probability_weight across all power_curves should equal 1.0 (within tolerance)
-required:
-  - metadata
-  - altitudes_m
-  - reference_wind_speeds_m_s
-  - power_curves
+
 additionalProperties: false
