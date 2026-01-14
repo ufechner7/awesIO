@@ -5,19 +5,20 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from awesio.validator import validate
 
-# List of power curves files to validate
-POWER_CURVES_FILES = [
-    "examples/ground_gen/ground_gen_power_curves.yml",
+# List of airborne files to validate
+AIRBORNE_FILES = [
+    "examples/fly_gen/fixed_wing_fly_gen_airborne.yml",
+    "examples/ground_gen/soft_kite_pumping_ground_gen_airborne.yml",
 ]
 
 def main():
     base_dir = Path(__file__).parent.parent
     
-    print("Validating power curves files:")
+    print("Validating airborne files:")
     print("=" * 60)
     
     all_passed = True
-    for file_path in POWER_CURVES_FILES:
+    for file_path in AIRBORNE_FILES:
         full_path = base_dir / file_path
         print(f"\n{file_path}")
         
@@ -29,7 +30,7 @@ def main():
         try:
             validate(
                 input=full_path,
-                schema_type="power_curves_schema",
+                schema_type="airborne_schema",
                 restrictive=False
             )
             print(f"  ✓ Valid")

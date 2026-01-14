@@ -32,7 +32,6 @@ metadata:
   altitude_range_m:
   - 0
   - 500
-  note: ERA5 reanalysis data processed for wind profile clustering analysis
   time_created: '2026-01-03T15:18:35.500717'
 altitudes:
 - 0.0

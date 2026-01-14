@@ -1,7 +1,9 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: tether_schema
 title: Tether Configuration Schema
-description: Schema for all AWES tether configurations including conductive (fly-gen) and non-conductive (ground-gen) types
+description: >
+  Schema for all AWES tether configurations including conductive (fly-gen) 
+  and non-conductive (ground-gen) types.
 
 type: object
 required:
@@ -69,6 +71,10 @@ properties:
         type: number
         minimum: 0
         description: Tether drag coefficient
+      max_tether_force_n:
+        type: number
+        minimum: 0
+        description: Maximum tether force in Newtons
       conductive:
         type: boolean
         description: Whether the tether contains electrical conductors
@@ -81,28 +87,65 @@ properties:
       electrical_conductors:
         $ref: "#/definitions/electrical_conductors"
     
-    # Conditional validation based on conductive property
-    allOf:
-      - if:
+    additionalProperties: false
+
+# Conditional validation based on tether_type
+allOf:
+  # Conducting fly-gen tether - requires conductive=true
+  - if:
+      properties:
+        metadata:
+          properties:
+            tether_type:
+              const: conducting_fly_gen
+    then:
+      properties:
+        tether:
           properties:
             conductive:
               const: true
-        then:
-          required:
-            - electrical_conductors
+  
+  # Non-conducting ground-gen tether - requires conductive=false
+  - if:
+      properties:
+        metadata:
           properties:
-            electrical_conductors:
-              $ref: "#/definitions/electrical_conductors"
-      - if:
+            tether_type:
+              const: non_conducting_ground_gen
+    then:
+      properties:
+        tether:
           properties:
             conductive:
               const: false
-        then:
-          not:
-            required:
-              - electrical_conductors
-    
-    additionalProperties: false
+
+  # Hybrid conducting - can be either
+  - if:
+      properties:
+        metadata:
+          properties:
+            tether_type:
+              const: hybrid_conducting
+    then:
+      properties:
+        tether:
+          properties:
+            conductive:
+              type: boolean
+
+  # If conductive is true, electrical_conductors may be specified
+  - if:
+      properties:
+        tether:
+          properties:
+            conductive:
+              const: true
+    then:
+      properties:
+        tether:
+          properties:
+            electrical_conductors:
+              $ref: "#/definitions/electrical_conductors"
 
 definitions:
   # Structural line properties

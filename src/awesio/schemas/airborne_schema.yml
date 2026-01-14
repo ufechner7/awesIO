@@ -1,7 +1,10 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: airborne_schema
 title: Airborne System Configuration Schema
-description: Schema for all AWES airborne system configurations including soft kites, hard wings, and various generation types
+description: >
+  Schema for all AWES airborne system configurations including soft kites 
+  (LEI, single skin, foil), hard wings (fixed wing, rigid, semi-rigid), 
+  and various generation types (pumping ground-gen, fly-gen, rotary ground-gen).
 
 type: object
 required:
@@ -43,6 +46,7 @@ properties:
           - LEI_soft_kite
           - single_skin_soft_kite
           - foil_soft_kite
+          - fixed_wing
           - rigid_hard_wing
           - semi_rigid_wing
         description: Type of airborne system
@@ -72,365 +76,13 @@ properties:
         $ref: "#/definitions/bridle"
       control_system:
         $ref: "#/definitions/control_system"
-      onboard_turbines:
-        $ref: "#/definitions/onboard_turbines"
-      electrical_system:
-        $ref: "#/definitions/electrical_system"
+      power_train:
+        $ref: "#/definitions/power_train"
     additionalProperties: false
 
-definitions:
-  # Wing definition with type-based conditional validation
-  wing:
-    type: object
-    required:
-      - type
-      - mass_kg
-    properties:
-      type:
-        type: string
-        enum:
-          - LEI_soft_kite
-          - single_skin_soft_kite
-          - foil_soft_kite
-          - rigid_hard_wing
-          - semi_rigid_wing
-        description: Wing type
-      mass_kg:
-        type: number
-        minimum: 0
-        description: Wing mass in kilograms
-      aspect_ratio:
-        type: number
-        minimum: 0
-        description: Wing aspect ratio
-      lift_polars:
-        type: array
-        items:
-          type: object
-          required:
-            - angle_of_attack_deg
-            - lift_coefficient
-          properties:
-            angle_of_attack_deg:
-              type: number
-            lift_coefficient:
-              type: number
-          additionalProperties: false
-        description: Lift polar data points
-      drag_polars:
-        type: array
-        items:
-          type: object
-          required:
-            - angle_of_attack_deg
-            - drag_coefficient
-          properties:
-            angle_of_attack_deg:
-              type: number
-            drag_coefficient:
-              type: number
-          additionalProperties: false
-        description: Drag polar data points
-      geometry:
-        $ref: "#/definitions/wing_geometry"
-      material_properties:
-        $ref: "#/definitions/material_properties"
-    allOf:
-      # Soft kite types (LEI, single skin, foil)
-      - if:
-          properties:
-            type:
-              enum:
-                - LEI_soft_kite
-                - single_skin_soft_kite
-                - foil_soft_kite
-        then:
-          required:
-            - projected_surface_area_m2
-          properties:
-            projected_surface_area_m2:
-              type: number
-              minimum: 0
-              description: Projected wing surface area in square meters (for soft kites)
-            bridle_height_m:
-              type: number
-              minimum: 0
-              description: Bridle attachment height in meters
-            flattening_factor:
-              type: number
-              minimum: 0
-              maximum: 1
-              description: Flattening factor for soft kite shape (0-1)
-            lift_coefficient_reel_out:
-              type: number
-              description: Lift coefficient during reel-out phase
-            drag_coefficient_reel_out:
-              type: number
-              minimum: 0
-              description: Drag coefficient during reel-out phase
-            lift_coefficient_reel_in:
-              type: number
-              description: Lift coefficient during reel-in phase
-            drag_coefficient_reel_in:
-              type: number
-              minimum: 0
-              description: Drag coefficient during reel-in phase
-      # Rigid/semi-rigid hard wing types
-      - if:
-          properties:
-            type:
-              enum:
-                - rigid_hard_wing
-                - semi_rigid_wing
-        then:
-          required:
-            - wing_surface_area_m2
-          properties:
-            wing_surface_area_m2:
-              type: number
-              minimum: 0
-              description: Wing surface area in square meters (for hard wings)
-            lift_coefficient_design:
-              type: number
-              description: Design lift coefficient
-            drag_coefficient_design:
-              type: number
-              minimum: 0
-              description: Design drag coefficient
-            max_lift_coefficient:
-              type: number
-              description: Maximum lift coefficient before stall
-    additionalProperties: true
-
-  # Wing geometry with type-based fields
-  wing_geometry:
-    type: object
-    properties:
-      span_m:
-        type: number
-        minimum: 0
-        description: Wing span in meters
-      root_chord_m:
-        type: number
-        minimum: 0
-        description: Root chord length in meters (hard wings)
-      tip_chord_m:
-        type: number
-        minimum: 0
-        description: Tip chord length in meters (hard wings)
-      sweep_angle_deg:
-        type: number
-        description: Wing sweep angle in degrees (hard wings)
-      dihedral_angle_deg:
-        type: number
-        description: Wing dihedral angle in degrees (hard wings)
-      airfoil:
-        type: string
-        description: Airfoil designation (hard wings)
-    additionalProperties: false
-
-  # Material properties
-  material_properties:
-    type: object
-    properties:
-      primary_structure:
-        type: string
-        description: Primary structural material
-      skin_material:
-        type: string
-        description: Skin/covering material
-      canopy_material:
-        type: string
-        description: Canopy material (soft kites)
-      leading_edge_material:
-        type: string
-        description: Leading edge material (LEI kites)
-    additionalProperties: true
-
-  # Bridle (soft kites only)
-  bridle:
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum:
-          - LEI_soft_kite_bridle
-          - single_skin_bridle
-          - foil_bridle
-        description: Bridle type
-      mass_kg:
-        type: number
-        minimum: 0
-        description: Bridle mass in kilograms
-      number_of_lines:
-        type: integer
-        minimum: 1
-        description: Number of bridle lines
-      line_diameter_m:
-        type: number
-        minimum: 0
-        description: Bridle line diameter in meters
-    additionalProperties: false
-
-  # Control system with type-based validation
-  control_system:
-    type: object
-    required:
-      - type
-      - mass_kg
-    properties:
-      type:
-        type: string
-        enum:
-          - kcu
-          - flight_controller_with_actuators
-          - steering_unit
-        description: Control system type
-      mass_kg:
-        type: number
-        minimum: 0
-        description: Control system mass in kilograms
-    allOf:
-      # KCU (Kite Control Unit) for soft kites
-      - if:
-          properties:
-            type:
-              const: kcu
-        then:
-          properties:
-            drag_coefficient:
-              type: number
-              minimum: 0
-              description: KCU drag coefficient
-            frontal_area_m2:
-              type: number
-              minimum: 0
-              description: KCU frontal area in square meters
-      # Flight controller with actuators for hard wings
-      - if:
-          properties:
-            type:
-              const: flight_controller_with_actuators
-        then:
-          properties:
-            control_surfaces:
-              type: object
-              properties:
-                ailerons:
-                  $ref: "#/definitions/control_surface"
-                elevators:
-                  $ref: "#/definitions/control_surface"
-                rudders:
-                  $ref: "#/definitions/control_surface"
-                flaps:
-                  $ref: "#/definitions/control_surface"
-              additionalProperties: false
-    additionalProperties: true
-
-  # Control surface definition
-  control_surface:
-    type: object
-    properties:
-      quantity:
-        type: integer
-        minimum: 1
-      area_m2_each:
-        type: number
-        minimum: 0
-      max_deflection_deg:
-        type: number
-        minimum: 0
-    additionalProperties: false
-
-  # Onboard turbines (fly-gen only)
-  onboard_turbines:
-    type: object
-    required:
-      - type
-      - number_of_turbines
-    properties:
-      type:
-        type: string
-        enum:
-          - horizontal_axis_turbines
-          - vertical_axis_turbines
-          - ducted_turbines
-        description: Turbine type
-      number_of_turbines:
-        type: integer
-        minimum: 1
-        description: Number of onboard turbines
-      turbine_diameter_m:
-        type: number
-        minimum: 0
-        description: Turbine rotor diameter in meters
-      rated_power_per_turbine_w:
-        type: number
-        minimum: 0
-        description: Rated power per turbine in watts
-      total_mass_kg:
-        type: number
-        minimum: 0
-        description: Total mass of all turbines in kilograms
-      rotor_speed_rpm:
-        type: number
-        minimum: 0
-        description: Nominal rotor speed in RPM
-      cut_in_wind_speed_m_s:
-        type: number
-        minimum: 0
-        description: Cut-in wind speed in m/s
-      rated_wind_speed_m_s:
-        type: number
-        minimum: 0
-        description: Rated wind speed in m/s
-      power_coefficient:
-        type: number
-        minimum: 0
-        maximum: 0.593
-        description: Power coefficient (Betz limit max 0.593)
-    additionalProperties: false
-
-  # Electrical system (fly-gen only)
-  electrical_system:
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum:
-          - onboard_power_electronics
-          - direct_drive
-        description: Electrical system type
-      mass_kg:
-        type: number
-        minimum: 0
-        description: Electrical system mass in kilograms
-      inverter_efficiency:
-        type: number
-        minimum: 0
-        maximum: 1
-        description: Inverter efficiency (0-1)
-      cable_losses_percent:
-        type: number
-        minimum: 0
-        maximum: 100
-        description: Cable losses in percent
-      voltage_output_v:
-        type: number
-        minimum: 0
-        description: Output voltage in volts
-      max_current_a:
-        type: number
-        minimum: 0
-        description: Maximum current in amperes
-    additionalProperties: false
-
-# Cross-validation: fly-gen systems must have onboard_turbines and electrical_system
+# Conditional validation based on generation_type
 allOf:
+  # Fly-gen systems require power_train
   - if:
       properties:
         metadata:
@@ -443,7 +95,396 @@ allOf:
           required:
             - wing
             - control_system
-            - onboard_turbines
-            - electrical_system
+            - power_train
+
+definitions:
+  # Wing definition - using oneOf for type-based validation
+  wing:
+    type: object
+    required:
+      - type
+      - mass_kg
+      - aspect_ratio
+    oneOf:
+      # Soft kite wing types
+      - properties:
+          type:
+            enum:
+              - LEI_soft_kite
+              - single_skin_soft_kite
+              - foil_soft_kite
+          mass_kg:
+            type: number
+            minimum: 0
+            description: Wing mass in kilograms
+          aspect_ratio:
+            type: number
+            minimum: 0
+            description: Wing aspect ratio
+          projected_surface_area_m2:
+            type: number
+            minimum: 0
+            description: Projected wing surface area in square meters (for soft kites)
+          bridle_height_m:
+            type: number
+            minimum: 0
+            description: Bridle attachment height in meters
+          flattening_factor:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: Flattening factor for soft kite shape (0-1)
+          lift_coefficient_reel_out:
+            type: number
+            description: Lift coefficient during reel-out phase
+          drag_coefficient_reel_out:
+            type: number
+            minimum: 0
+            description: Drag coefficient during reel-out phase
+          lift_coefficient_reel_in:
+            type: number
+            description: Lift coefficient during reel-in phase
+          drag_coefficient_reel_in:
+            type: number
+            minimum: 0
+            description: Drag coefficient during reel-in phase
+          lift_polars:
+            type: array
+            items:
+              type: object
+              required:
+                - angle_of_attack_deg
+                - lift_coefficient
+              properties:
+                angle_of_attack_deg:
+                  type: number
+                lift_coefficient:
+                  type: number
+              additionalProperties: false
+            description: Lift polar data points
+          drag_polars:
+            type: array
+            items:
+              type: object
+              required:
+                - angle_of_attack_deg
+                - drag_coefficient
+              properties:
+                angle_of_attack_deg:
+                  type: number
+                drag_coefficient:
+                  type: number
+              additionalProperties: false
+            description: Drag polar data points
+          geometry:
+            $ref: "#/definitions/wing_geometry"
+          material_properties:
+            $ref: "#/definitions/material_properties"
+        required:
+          - type
+          - mass_kg
+          - aspect_ratio
+          - projected_surface_area_m2
+        additionalProperties: false
+      
+      # Hard wing types (fixed, rigid, semi-rigid)
+      - properties:
+          type:
+            enum:
+              - fixed_wing
+              - rigid_hard_wing
+              - semi_rigid_wing
+          mass_kg:
+            type: number
+            minimum: 0
+            description: Wing mass in kilograms
+          aspect_ratio:
+            type: number
+            minimum: 0
+            description: Wing aspect ratio
+          wing_surface_area_m2:
+            type: number
+            minimum: 0
+            description: Wing surface area in square meters (for hard wings)
+          lift_coefficient_design:
+            type: number
+            description: Design lift coefficient
+          drag_coefficient_design:
+            type: number
+            minimum: 0
+            description: Design drag coefficient
+          max_lift_coefficient:
+            type: number
+            description: Maximum lift coefficient
+          oswald_efficiency:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: Oswald efficiency factor
+          lift_polars:
+            type: array
+            items:
+              type: object
+              required:
+                - angle_of_attack_deg
+                - lift_coefficient
+              properties:
+                angle_of_attack_deg:
+                  type: number
+                lift_coefficient:
+                  type: number
+              additionalProperties: false
+            description: Lift polar data points
+          drag_polars:
+            type: array
+            items:
+              type: object
+              required:
+                - angle_of_attack_deg
+                - drag_coefficient
+              properties:
+                angle_of_attack_deg:
+                  type: number
+                drag_coefficient:
+                  type: number
+              additionalProperties: false
+            description: Drag polar data points
+          geometry:
+            $ref: "#/definitions/wing_geometry"
+          material_properties:
+            $ref: "#/definitions/material_properties"
+        required:
+          - type
+          - mass_kg
+          - aspect_ratio
+          - wing_surface_area_m2
+        additionalProperties: false
+
+  # Wing geometry
+  wing_geometry:
+    type: object
+    properties:
+      span_m:
+        type: number
+        minimum: 0
+        description: Wing span in meters
+      chord_m:
+        type: number
+        minimum: 0
+        description: Mean chord in meters
+      root_chord_m:
+        type: number
+        minimum: 0
+        description: Root chord in meters
+      tip_chord_m:
+        type: number
+        minimum: 0
+        description: Tip chord in meters
+      sweep_angle_deg:
+        type: number
+        description: Sweep angle in degrees
+      dihedral_angle_deg:
+        type: number
+        description: Dihedral angle in degrees
+      twist_deg:
+        type: number
+        description: Wing twist in degrees
+    additionalProperties: false
+
+  # Material properties for soft kites
+  material_properties:
+    type: object
+    properties:
+      canopy_material:
+        type: string
+        description: Canopy material type
+      leading_edge_material:
+        type: string
+        description: Leading edge material type
+      strut_material:
+        type: string
+        description: Strut material type
+      skin_material:
+        type: string
+        description: Skin material type
+      structural_material:
+        type: string
+        description: Structural material type
+    additionalProperties: false
+
+  # Bridle definition
+  bridle:
+    type: object
+    required:
+      - type
+      - mass_kg
+    properties:
+      type:
+        type: string
+        enum:
+          - LEI_soft_kite_bridle
+          - foil_kite_bridle
+          - single_skin_bridle
+          - hard_wing_bridle
+        description: Bridle type
+      mass_kg:
+        type: number
+        minimum: 0
+        description: Bridle mass in kilograms
+      number_of_lines:
+        type: integer
+        minimum: 1
+        description: Number of bridle lines
+      line_diameter_mm:
+        type: number
+        minimum: 0
+        description: Bridle line diameter in millimeters
+      line_material:
+        type: string
+        description: Bridle line material
+      breaking_strength_n:
+        type: number
+        minimum: 0
+        description: Breaking strength per line in Newtons
+    additionalProperties: false
+
+  # Control system definition using oneOf for type-based validation
+  control_system:
+    type: object
+    required:
+      - type
+    oneOf:
+      # KCU for soft kites
+      - properties:
+          type:
+            const: kcu
+          mass_kg:
+            type: number
+            minimum: 0
+            description: Control system mass in kilograms
+          drag_coefficient:
+            type: number
+            minimum: 0
+            description: Control system drag coefficient
+          frontal_area_m2:
+            type: number
+            minimum: 0
+            description: Frontal area in square meters
+          power_consumption_w:
+            type: number
+            minimum: 0
+            description: Power consumption in Watts
+          control_bandwidth_hz:
+            type: number
+            minimum: 0
+            description: Control bandwidth in Hz
+        required:
+          - type
+          - mass_kg
+          - drag_coefficient
+          - frontal_area_m2
+        additionalProperties: false
+      
+      # Flight controller for hard wings
+      - properties:
+          type:
+            const: flight_controller
+          mass_kg:
+            type: number
+            minimum: 0
+            description: Control system mass in kilograms
+          power_consumption_w:
+            type: number
+            minimum: 0
+            description: Power consumption in Watts
+          control_bandwidth_hz:
+            type: number
+            minimum: 0
+            description: Control bandwidth in Hz
+          aileron_authority_deg:
+            type: number
+            description: Maximum aileron deflection in degrees
+          elevator_authority_deg:
+            type: number
+            description: Maximum elevator deflection in degrees
+          rudder_authority_deg:
+            type: number
+            description: Maximum rudder deflection in degrees
+        required:
+          - type
+        additionalProperties: false
+      
+      # Manual control
+      - properties:
+          type:
+            const: manual_control
+          description:
+            type: string
+        required:
+          - type
+        additionalProperties: false
+      
+      # Autopilot
+      - properties:
+          type:
+            const: autopilot
+          mass_kg:
+            type: number
+            minimum: 0
+            description: Control system mass in kilograms
+          power_consumption_w:
+            type: number
+            minimum: 0
+            description: Power consumption in Watts
+          control_bandwidth_hz:
+            type: number
+            minimum: 0
+            description: Control bandwidth in Hz
+        required:
+          - type
+        additionalProperties: false
+
+  # Power train for fly-gen systems
+  power_train:
+    type: object
+    required:
+      - type
+      - number_of_turbines
+    properties:
+      type:
+        type: string
+        enum:
+          - onboard_turbine
+          - propeller_generator
+        description: Power train type
+      number_of_turbines:
+        type: integer
+        minimum: 1
+        description: Number of onboard turbines
+      rotor_diameter_m:
+        type: number
+        minimum: 0
+        description: Rotor diameter in meters
+      rated_power_kw:
+        type: number
+        minimum: 0
+        description: Rated power per turbine in kilowatts
+      generator_type:
+        type: string
+        description: Generator type
+      generator_efficiency:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Generator efficiency (0-1)
+      cut_in_speed_m_s:
+        type: number
+        minimum: 0
+        description: Cut-in wind speed in m/s
+      cut_out_speed_m_s:
+        type: number
+        minimum: 0
+        description: Cut-out wind speed in m/s
+    additionalProperties: false
 
 additionalProperties: false

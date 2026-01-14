@@ -1,12 +1,13 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: operational_constraints_schema
 title: Operational Constraints Schema
-description: Schema for all AWES operational constraints including pumping ground-gen, rotary ground-gen, and fly-gen systems
+description: >
+  Schema for all AWES operational constraints including pumping ground-gen,
+  rotary ground-gen, and fly-gen systems.
 
 type: object
 required:
   - metadata
-  - operational_constraints
 
 properties:
   metadata:
@@ -44,43 +45,41 @@ properties:
         description: Type of AWES system these constraints apply to
     additionalProperties: false
 
-  operational_constraints:
-    type: object
-    properties:
-      # Common constraints for all system types
-      wind_envelope:
-        $ref: "#/definitions/wind_envelope"
-      
-      flight_envelope:
-        $ref: "#/definitions/flight_envelope"
-      
-      tether_constraints:
-        $ref: "#/definitions/tether_constraints"
-      
-      # Ground-gen specific constraints
-      cycle_constraints:
-        $ref: "#/definitions/cycle_constraints"
-      
-      # Fly-gen specific constraints
-      turbine_constraints:
-        $ref: "#/definitions/turbine_constraints"
-      
-      electrical_constraints:
-        $ref: "#/definitions/electrical_constraints"
-      
-      # Safety constraints (common)
-      safety_constraints:
-        $ref: "#/definitions/safety_constraints"
-      
-      # Airspace constraints (common)
-      airspace_constraints:
-        $ref: "#/definitions/airspace_constraints"
-    
-    additionalProperties: false
+  # Wind envelope constraints (common)
+  wind_envelope:
+    $ref: "#/definitions/wind_envelope"
+  
+  # Flight envelope constraints (common)
+  flight_envelope:
+    $ref: "#/definitions/flight_envelope"
+  
+  # Tether constraints (common)
+  tether_constraints:
+    $ref: "#/definitions/tether_constraints"
+  
+  # Cycle constraints (ground-gen only)
+  cycle_constraints:
+    $ref: "#/definitions/cycle_constraints"
+  
+  # Turbine constraints (fly-gen only)
+  turbine_constraints:
+    $ref: "#/definitions/turbine_constraints"
+  
+  # Electrical constraints (fly-gen only)
+  electrical_constraints:
+    $ref: "#/definitions/electrical_constraints"
+  
+  # Safety constraints (common)
+  safety_constraints:
+    $ref: "#/definitions/safety_constraints"
+  
+  # Airspace constraints (common)
+  airspace_constraints:
+    $ref: "#/definitions/airspace_constraints"
 
 # Conditional validation based on system_type
 allOf:
-  # Pumping ground-gen requires cycle_constraints
+  # Pumping ground-gen may have cycle_constraints, should not have turbine/electrical
   - if:
       properties:
         metadata:
@@ -89,15 +88,10 @@ allOf:
               const: pumping_ground_gen
     then:
       properties:
-        operational_constraints:
-          required:
-            - cycle_constraints
-          not:
-            anyOf:
-              - required: [turbine_constraints]
-              - required: [electrical_constraints]
+        cycle_constraints:
+          $ref: "#/definitions/cycle_constraints"
   
-  # Rotary ground-gen may have cycle constraints
+  # Rotary ground-gen - similar to pumping
   - if:
       properties:
         metadata:
@@ -106,13 +100,10 @@ allOf:
               const: rotary_ground_gen
     then:
       properties:
-        operational_constraints:
-          not:
-            anyOf:
-              - required: [turbine_constraints]
-              - required: [electrical_constraints]
+        cycle_constraints:
+          $ref: "#/definitions/cycle_constraints"
   
-  # Fly-gen requires turbine and electrical constraints
+  # Fly-gen may have turbine and electrical constraints
   - if:
       properties:
         metadata:
@@ -121,14 +112,32 @@ allOf:
               const: fly_gen
     then:
       properties:
-        operational_constraints:
-          required:
-            - turbine_constraints
-            - electrical_constraints
-          not:
-            required: [cycle_constraints]
+        turbine_constraints:
+          $ref: "#/definitions/turbine_constraints"
+        electrical_constraints:
+          $ref: "#/definitions/electrical_constraints"
+
+additionalProperties: false
 
 definitions:
+  # Bound object for min/max/unit specifications
+  bound_object:
+    type: object
+    properties:
+      description:
+        type: string
+        description: Description of the constraint
+      min:
+        type: number
+        description: Minimum value
+      max:
+        type: number
+        description: Maximum value
+      unit:
+        type: string
+        description: Unit of measurement
+    additionalProperties: false
+
   # Wind envelope constraints
   wind_envelope:
     type: object
@@ -184,7 +193,7 @@ definitions:
         description: Required stall margin (0-1)
     additionalProperties: false
 
-  # Tether constraints (common with type variations)
+  # Tether constraints
   tether_constraints:
     type: object
     properties:
@@ -201,17 +210,12 @@ definitions:
       max_tether_speed_m_s:
         type: number
         minimum: 0
-        description: Maximum tether reel speed in m/s (ground-gen)
-      tether_stroke_m:
-        $ref: "#/definitions/bound_object"
+        description: Maximum tether speed in m/s
     additionalProperties: false
 
-  # Cycle constraints (ground-gen specific)
+  # Cycle constraints (ground-gen)
   cycle_constraints:
     type: object
-    required:
-      - reel_out_speed
-      - reel_in_speed
     properties:
       reel_out_speed:
         $ref: "#/definitions/bound_object"
@@ -224,36 +228,32 @@ definitions:
       min_cycle_time_s:
         type: number
         minimum: 0
-        description: Minimum cycle duration in seconds
+        description: Minimum cycle time in seconds
       max_cycle_time_s:
         type: number
         minimum: 0
-        description: Maximum cycle duration in seconds
+        description: Maximum cycle time in seconds
       transition_time_s:
         type: number
         minimum: 0
-        description: Maximum phase transition time in seconds
+        description: Transition time between phases in seconds
       pattern_constraints:
         type: object
         properties:
           min_patterns_per_phase:
             type: integer
             minimum: 1
-            description: Minimum number of figure-8 patterns per reel-out phase
+            description: Minimum number of patterns per phase
           max_patterns_per_phase:
             type: integer
             minimum: 1
-            description: Maximum number of figure-8 patterns per reel-out phase
+            description: Maximum number of patterns per phase
         additionalProperties: false
     additionalProperties: false
 
-  # Turbine constraints (fly-gen specific)
+  # Turbine constraints (fly-gen)
   turbine_constraints:
     type: object
-    required:
-      - min_rotor_speed_rpm
-      - max_rotor_speed_rpm
-      - rated_power_kw
     properties:
       min_rotor_speed_rpm:
         type: number
@@ -263,74 +263,57 @@ definitions:
         type: number
         minimum: 0
         description: Maximum rotor speed in RPM
-      rated_power_kw:
+      rated_rotor_speed_rpm:
         type: number
         minimum: 0
-        description: Rated turbine power in kilowatts
-      max_power_kw:
+        description: Rated rotor speed in RPM
+      max_tip_speed_m_s:
         type: number
         minimum: 0
-        description: Maximum turbine power in kilowatts
-      max_tip_speed_ratio:
-        type: number
-        minimum: 0
-        description: Maximum tip speed ratio
-      max_thrust_n:
-        type: number
-        minimum: 0
-        description: Maximum thrust per turbine in Newtons
+        description: Maximum tip speed in m/s
     additionalProperties: false
 
-  # Electrical constraints (fly-gen specific)
+  # Electrical constraints (fly-gen)
   electrical_constraints:
     type: object
-    required:
-      - max_current_a
-      - operating_voltage_v
     properties:
       max_current_a:
         type: number
         minimum: 0
-        description: Maximum current through tether in Amperes
-      operating_voltage_v:
+        description: Maximum current in Amperes
+      max_voltage_v:
         type: number
         minimum: 0
-        description: Operating voltage in Volts
-      max_power_transmission_kw:
+        description: Maximum voltage in Volts
+      max_power_kw:
         type: number
         minimum: 0
-        description: Maximum power transmission in kilowatts
-      max_line_losses_percent:
-        type: number
-        minimum: 0
-        maximum: 100
-        description: Maximum acceptable line losses in percent
+        description: Maximum power in kilowatts
     additionalProperties: false
 
-  # Safety constraints (common)
+  # Safety constraints
   safety_constraints:
     type: object
     properties:
       min_ground_clearance_m:
         type: number
         minimum: 0
-        description: Minimum height above ground in meters
+        description: Minimum ground clearance in meters
       exclusion_zone_radius_m:
         type: number
         minimum: 0
-        description: Ground exclusion zone radius in meters
-      max_response_time_s:
+        description: Exclusion zone radius in meters
+      max_flight_duration_h:
         type: number
         minimum: 0
-        description: Maximum emergency response time in seconds
-      emergency_procedures:
-        type: array
-        items:
-          type: string
-        description: List of emergency procedures
+        description: Maximum flight duration in hours
+      emergency_landing_speed_m_s:
+        type: number
+        minimum: 0
+        description: Emergency landing speed in m/s
     additionalProperties: false
 
-  # Airspace constraints (common)
+  # Airspace constraints
   airspace_constraints:
     type: object
     properties:
@@ -347,37 +330,12 @@ definitions:
         items:
           type: object
           properties:
+            name:
+              type: string
             type:
               type: string
-            center_lat_deg:
-              type: number
-            center_lon_deg:
-              type: number
-            radius_m:
-              type: number
+            coordinates:
+              type: array
           additionalProperties: false
         description: List of restricted zones
     additionalProperties: false
-
-  # Reusable bound object definition
-  bound_object:
-    type: object
-    properties:
-      description:
-        type: string
-        description: Description of the bounded parameter
-      min:
-        type: number
-        description: Minimum value
-      max:
-        type: number
-        description: Maximum value
-      unit:
-        type: string
-        description: Unit of measurement
-    required:
-      - min
-      - max
-    additionalProperties: false
-
-additionalProperties: false

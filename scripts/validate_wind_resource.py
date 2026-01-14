@@ -1,47 +1,48 @@
 from pathlib import Path
 import sys
-import argparse
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from awesio.validator import validate
 
+# List of wind resource files to validate
+WIND_RESOURCE_FILES = [
+    "examples/wind_resource.yml",
+]
+
 def main():
-    parser = argparse.ArgumentParser(description="Validate wind resource YAML files")
-    parser.add_argument(
-        "file",
-        nargs="?",
-        default=None,
-        help="Path to wind resource YAML file to validate"
-    )
-    parser.add_argument(
-        "--restrictive",
-        action="store_true",
-        help="Enable restrictive validation (no additional properties allowed)"
-    )
+    base_dir = Path(__file__).parent.parent
     
-    args = parser.parse_args()
+    print("Validating wind resource files:")
+    print("=" * 60)
     
-    if args.file:
-        wind_resource_file = Path(args.file)
+    all_passed = True
+    for file_path in WIND_RESOURCE_FILES:
+        full_path = base_dir / file_path
+        print(f"\n{file_path}")
+        
+        if not full_path.exists():
+            print(f"  ✗ File not found")
+            all_passed = False
+            continue
+        
+        try:
+            validate(
+                input=full_path,
+                schema_type="wind_resource_schema",
+                restrictive=False
+            )
+            print(f"  ✓ Valid")
+        except Exception as e:
+            print(f"  ✗ Invalid: {e}")
+            all_passed = False
+    
+    print("\n" + "=" * 60)
+    if all_passed:
+        print("All files validated successfully!")
+        sys.exit(0)
     else:
-        wind_resource_file = Path(__file__).parent.parent / "examples" / "wind_resource.yml"
-    
-    if not wind_resource_file.exists():
-        print(f"Error: File {wind_resource_file} not found.")
-        sys.exit(1)
-    
-    print(f"Validating {wind_resource_file}...")
-    
-    try:
-        validate(
-            input=wind_resource_file,
-            schema_type="wind_resource_schema",
-            restrictive=args.restrictive
-        )
-        print("Validation successful!")
-    except Exception as e:
-        print(f"Validation failed: {e}")
+        print("Some files failed validation.")
         sys.exit(1)
 
 if __name__ == "__main__":

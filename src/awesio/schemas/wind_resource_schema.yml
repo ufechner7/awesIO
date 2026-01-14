@@ -1,7 +1,9 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: wind_resource_schema
 title: Wind Resource Data Schema
-description: Schema for wind resource clustering data including location, time range, and cluster definitions
+description: >
+  Schema for wind resource clustering data including location, time range,
+  and cluster definitions.
 
 type: object
 required:
@@ -85,26 +87,33 @@ properties:
             type: number
             minimum: -90
             maximum: 90
+            description: Latitude in degrees
           longitude:
             type: number
             minimum: -180
             maximum: 180
+            description: Longitude in degrees
+        additionalProperties: false
         description: Geographic location of the wind resource
       time_range:
         type: object
         properties:
           start_year:
             type: integer
+            description: Start year
           end_year:
             type: integer
+            description: End year
           years:
             type: array
             items:
               type: integer
+            description: List of years included
           years_included:
             type: array
             items:
               type: integer
+            description: List of years included
           months_included:
             oneOf:
               - type: string
@@ -114,6 +123,8 @@ properties:
                   type: integer
                   minimum: 1
                   maximum: 12
+            description: Months included in data
+        additionalProperties: false
         description: Time range of the wind data
       altitude_range_m:
         type: array
@@ -127,27 +138,35 @@ properties:
         properties:
           n_pcs:
             type: integer
+            description: Number of principal components
           explained_variance:
             type: array
             items:
               type: number
+            description: Explained variance per PC
           explained_variance_ratio:
             type: number
+            description: Total explained variance ratio
           method:
             type: string
+            description: Clustering method
           n_init:
             type: integer
+            description: Number of initializations
           max_iter:
             type: integer
+            description: Maximum iterations
           random_state:
             type: integer
+            description: Random state for reproducibility
           fit_inertia:
             type: number
+            description: Fit inertia value
+        additionalProperties: false
         description: Parameters used for wind profile clustering
       time_created:
         type: string
         description: Timestamp of data creation
-    additionalProperties: true
     additionalProperties: true
 
   altitudes:
@@ -155,22 +174,32 @@ properties:
     items:
       type: number
     minItems: 1
+    description: Array of altitudes in meters
+
   wind_speed_bins:
     type: object
+    required:
+      - bin_edges_m_s
+      - bin_centers_m_s
     properties:
       bin_edges_m_s:
         type: array
         items:
           type: number
+        description: Wind speed bin edges in m/s
       bin_centers_m_s:
         type: array
         items:
           type: number
-    required:
-      - bin_edges_m_s
-      - bin_centers_m_s
+        description: Wind speed bin centers in m/s
+    additionalProperties: false
+    description: Wind speed binning information
+
   wind_direction_bins:
     type: object
+    required:
+      - bin_edges_deg
+      - bin_centers_deg
     properties:
       bin_edges_deg:
         type: array
@@ -178,71 +207,114 @@ properties:
           type: number
           minimum: 0
           maximum: 360
+        description: Wind direction bin edges in degrees
       bin_centers_deg:
         type: array
         items:
           type: number
           minimum: 0
           maximum: 360
-    required:
-      - bin_edges_deg
-      - bin_centers_deg
+        description: Wind direction bin centers in degrees
+    additionalProperties: false
+    description: Wind direction binning information
+
   clusters:
     type: array
     items:
       type: object
-      properties:
-        id:
-          type: integer
-          minimum: 1
-        u_normalized:
-          type: array
-          items:
-            type: number
-        v_normalized:
-          type: array
-          items:
-            type: number
       required:
         - id
         - u_normalized
         - v_normalized
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          description: Cluster identifier
+        u_normalized:
+          type: array
+          items:
+            type: number
+          minItems: 1
+          description: Normalized u-component of wind speed at each altitude
+        v_normalized:
+          type: array
+          items:
+            type: number
+          minItems: 1
+          description: Normalized v-component of wind speed at each altitude
+        speed_ratio_at_reference_height:
+          type: number
+          minimum: 0
+          description: Speed ratio at reference height
+        probability:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Overall probability of this cluster
+        sample_count:
+          type: integer
+          minimum: 0
+          description: Number of samples in this cluster
+      additionalProperties: false
     minItems: 1
+    description: Array of wind profile clusters
+
   probability_matrix:
-    type: object
-    properties:
-      description:
-        type: string
-      dimensions:
-        type: string
-      data:
-        oneOf:
-          - type: array
+    oneOf:
+      - type: object
+        required:
+          - data
+        properties:
+          description:
+            type: string
+            description: Description of the probability matrix
+          dimensions:
+            type: string
+            description: Dimensions description
+          data:
+            type: array
             items:
               type: array
               items:
                 type: number
-            description: 2D matrix (n_clusters x n_wind_speed_bins)
-          - type: array
+                minimum: 0
+              minItems: 1
+            minItems: 1
+            description: >
+              2D probability matrix with dimensions [n_clusters x n_wind_speed_bins].
+              Each row represents a cluster, each column represents a wind speed bin.
+              Values are probabilities (should sum to 1.0).
+        additionalProperties: false
+        description: Probability matrix for cluster occurrence at each wind speed bin (no directional information)
+      - type: object
+        required:
+          - data
+        properties:
+          description:
+            type: string
+            description: Description of the probability matrix
+          dimensions:
+            type: string
+            description: Dimensions description
+          data:
+            type: array
             items:
               type: array
               items:
                 type: array
                 items:
                   type: number
-            description: 3D matrix (n_clusters x n_wind_speed_bins x n_wind_direction_bins)
-    required:
-      - description
-      - dimensions
-      - data
-
-  # Custom validation notes:
-  # - u_normalized and v_normalized arrays within each cluster must have the same length
-  # - u_normalized and v_normalized must have the same length as altitudes array
-  # - cluster id values must be unique and consecutive (1, 2, 3, ...)
-  # - probability_matrix data dimensions must match n_clusters x n_wind_speed_bins or n_clusters x n_wind_speed_bins x n_wind_direction_bins
-  # - bin_edges_m_s must have exactly n_wind_speed_bins + 1 elements
-  # - bin_centers_m_s must have exactly n_wind_speed_bins elements
-  # - Sum of probabilities in probability_matrix should equal 1.0 (within tolerance)
+                  minimum: 0
+                minItems: 1
+              minItems: 1
+            minItems: 1
+            description: >
+              3D probability matrix with dimensions [n_clusters x n_wind_speed_bins x n_wind_direction_bins].
+              Each cluster has a matrix where rows represent wind speed bins and columns represent direction bins.
+              Values are probabilities (should sum to 1.0).
+        additionalProperties: false
+        description: Probability matrix for cluster occurrence at each wind speed and direction bin
+    description: Probability matrix for cluster occurrence (either 2D or 3D depending on directional data)
 
 additionalProperties: false

@@ -1,12 +1,14 @@
 $schema: http://json-schema.org/draft-07/schema#
 $id: ground_station_schema
 title: Ground Station Configuration Schema
-description: Schema for all AWES ground station configurations including pumping ground-gen, rotary ground-gen, and fly-gen systems
+description: >
+  Schema for all AWES ground station configurations including pumping ground-gen,
+  rotary ground-gen, and fly-gen systems.
 
 type: object
 required:
   - metadata
-  - ground_station
+  - components
 
 properties:
   metadata:
@@ -44,16 +46,18 @@ properties:
         description: Type of ground station system
     additionalProperties: false
 
-  ground_station:
+  components:
     type: object
     properties:
-      # Common ground station properties
+      # Location (common)
       location:
         $ref: "#/definitions/location"
       
-      # Winch systems (type-dependent)
+      # Drum winch (ground-gen only)
       drum_winch:
         $ref: "#/definitions/drum_winch"
+      
+      # Tensioning winch (fly-gen only)
       tensioning_winch:
         $ref: "#/definitions/tensioning_winch"
       
@@ -65,11 +69,15 @@ properties:
       power_receiving_station:
         $ref: "#/definitions/power_receiving_station"
       
+      # Storage (common)
+      storage:
+        $ref: "#/definitions/storage"
+      
       # Electrical efficiencies (common)
       electrical_efficiencies:
         $ref: "#/definitions/electrical_efficiencies"
       
-      # Control and safety systems (common)
+      # Control system (common)
       control_system:
         $ref: "#/definitions/control_system"
       
@@ -79,7 +87,7 @@ properties:
     
     additionalProperties: false
 
-# Conditional validation based on metadata.ground_station_type
+# Conditional validation based on ground_station_type
 allOf:
   # Pumping ground-gen requires drum_winch and generator
   - if:
@@ -90,14 +98,10 @@ allOf:
               const: pumping_ground_gen
     then:
       properties:
-        ground_station:
+        components:
           required:
             - drum_winch
             - generator
-          not:
-            anyOf:
-              - required: [tensioning_winch]
-              - required: [power_receiving_station]
   
   # Rotary ground-gen requires generator
   - if:
@@ -108,11 +112,11 @@ allOf:
               const: rotary_ground_gen
     then:
       properties:
-        ground_station:
+        components:
           required:
             - generator
   
-  # Fly-gen requires tensioning_winch and power_receiving_station
+  # Fly-gen may have tensioning_winch and power_receiving_station
   - if:
       properties:
         metadata:
@@ -121,14 +125,12 @@ allOf:
               const: fly_gen
     then:
       properties:
-        ground_station:
-          required:
-            - tensioning_winch
-            - power_receiving_station
-          not:
-            anyOf:
-              - required: [drum_winch]
-              - required: [generator]
+        components:
+          properties:
+            tensioning_winch:
+              $ref: "#/definitions/tensioning_winch"
+            power_receiving_station:
+              $ref: "#/definitions/power_receiving_station"
 
 definitions:
   # Location definition
@@ -198,24 +200,22 @@ definitions:
         type: number
         minimum: 0
         description: Maximum tether force capacity in Newtons
-      nominal_tether_force_n:
-        type: number
-        minimum: 0
-        description: Nominal operating tether force in Newtons
-      tether_adjustment_speed_m_s:
-        type: number
-        minimum: 0
-        description: Maximum tether length adjustment speed in m/s
       motor_power_kw:
         type: number
         minimum: 0
         description: Motor power rating in kilowatts
+      efficiency:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Winch mechanical efficiency (0-1)
     additionalProperties: false
 
   # Generator (ground-gen systems)
   generator:
     type: object
     required:
+      - type
       - rated_power_kw
     properties:
       type:
@@ -223,26 +223,26 @@ definitions:
         enum:
           - permanent_magnet_synchronous
           - induction
-          - doubly_fed_induction
-          - wound_rotor_synchronous
+          - synchronous
+          - dc
         description: Generator type
       rated_power_kw:
         type: number
         minimum: 0
-        description: Rated power output in kilowatts
+        description: Rated power in kilowatts
       max_power_kw:
         type: number
         minimum: 0
-        description: Maximum power output in kilowatts
+        description: Maximum power in kilowatts
       rated_speed_rpm:
         type: number
         minimum: 0
-        description: Rated rotational speed in RPM
+        description: Rated speed in RPM
       efficiency:
         type: number
         minimum: 0
         maximum: 1
-        description: Generator efficiency at rated power (0-1)
+        description: Generator efficiency (0-1)
       voltage_v:
         type: number
         minimum: 0
@@ -252,123 +252,83 @@ definitions:
   # Power receiving station (fly-gen)
   power_receiving_station:
     type: object
-    required:
-      - rated_power_kw
     properties:
-      rated_power_kw:
-        type: number
-        minimum: 0
-        description: Rated power receiving capacity in kilowatts
       max_power_kw:
         type: number
         minimum: 0
         description: Maximum power receiving capacity in kilowatts
-      input_voltage_v:
+      voltage_v:
         type: number
         minimum: 0
-        description: Input voltage from tether in Volts
-      output_voltage_v:
+        description: Input voltage in Volts
+      rectifier_type:
+        type: string
+        description: Rectifier type
+      efficiency:
         type: number
         minimum: 0
-        description: Output voltage to grid in Volts
-      power_electronics:
-        type: object
-        properties:
-          type:
-            type: string
-            enum:
-              - ac_dc_dc_ac
-              - dc_dc
-              - ac_dc
-            description: Power electronics conversion type
-          efficiency:
-            type: number
-            minimum: 0
-            maximum: 1
-            description: Power electronics efficiency (0-1)
-        additionalProperties: false
-      slip_ring:
-        type: object
-        properties:
-          type:
-            type: string
-            description: Slip ring type for tether rotation handling
-          max_current_a:
-            type: number
-            minimum: 0
-            description: Maximum current capacity in Amperes
-          max_rotation_rpm:
-            type: number
-            minimum: 0
-            description: Maximum rotation speed in RPM
-        additionalProperties: false
+        maximum: 1
+        description: Power receiving efficiency (0-1)
     additionalProperties: false
 
-  # Electrical efficiencies (common)
+  # Storage (common)
+  storage:
+    type: object
+    required:
+      - type
+      - capacity_kwh
+    properties:
+      type:
+        type: string
+        enum:
+          - battery_bank
+          - supercapacitor
+          - flywheel
+          - none
+        description: Storage type
+      capacity_kwh:
+        type: number
+        minimum: 0
+        description: Storage capacity in kilowatt-hours
+      max_charge_rate_kw:
+        type: number
+        minimum: 0
+        description: Maximum charge rate in kilowatts
+      max_discharge_rate_kw:
+        type: number
+        minimum: 0
+        description: Maximum discharge rate in kilowatts
+      efficiency:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Round-trip efficiency (0-1)
+      state_of_charge_initial:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Initial state of charge (0-1)
+    additionalProperties: false
+
+  # Electrical efficiencies
   electrical_efficiencies:
     type: object
     properties:
-      motor_controller:
-        type: object
-        properties:
-          self_consumption_w:
-            type: number
-            minimum: 0
-            description: Motor controller self-consumption in watts
-          efficiency:
-            type: number
-            minimum: 0
-            maximum: 1
-            description: Motor controller efficiency (0-1)
-        additionalProperties: false
-      dc_ac_converter:
-        type: object
-        properties:
-          self_consumption_w:
-            type: number
-            minimum: 0
-            description: DC/AC converter self-consumption in watts
-          efficiency:
-            type: number
-            minimum: 0
-            maximum: 1
-            description: DC/AC converter efficiency (0-1)
-        additionalProperties: false
-      transformer:
-        type: object
-        properties:
-          self_consumption_w:
-            type: number
-            minimum: 0
-            description: Transformer self-consumption in watts
-          efficiency:
-            type: number
-            minimum: 0
-            maximum: 1
-            description: Transformer efficiency (0-1)
-        additionalProperties: false
-      external_battery:
-        type: object
-        properties:
-          connected:
-            type: boolean
-            description: Whether external battery is connected
-          self_consumption_w:
-            type: number
-            minimum: 0
-            description: External battery self-consumption in watts
-          efficiency:
-            type: number
-            minimum: 0
-            maximum: 1
-            description: External battery efficiency (0-1)
-          capacity_kwh:
-            type: number
-            minimum: 0
-            description: Battery capacity in kilowatt-hours
-        required:
-          - connected
-        additionalProperties: false
+      power_electronics_efficiency:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Power electronics efficiency (0-1)
+      transformer_efficiency:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Transformer efficiency (0-1)
+      grid_connection_efficiency:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Grid connection efficiency (0-1)
     additionalProperties: false
 
   # Control system
@@ -377,16 +337,14 @@ definitions:
     properties:
       type:
         type: string
-        enum:
-          - centralized
-          - distributed
-          - hybrid
-        description: Control architecture type
-      safety_features:
-        type: array
-        items:
-          type: string
-        description: List of safety features
+        description: Control system type
+      control_bandwidth_hz:
+        type: number
+        minimum: 0
+        description: Control bandwidth in Hz
+      communication_protocol:
+        type: string
+        description: Communication protocol
     additionalProperties: false
 
   # Launch and recovery system
@@ -396,13 +354,11 @@ definitions:
       type:
         type: string
         enum:
-          - mast_based
-          - ground_based
-          - perched_landing
-          - net_based
-          - rotating_arm
+          - mast
+          - catapult
           - vertical_takeoff
-        description: Launch and recovery system type
+          - ground_launch
+        description: Launch/recovery system type
       max_wind_speed_m_s:
         type: number
         minimum: 0
