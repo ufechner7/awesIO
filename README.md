@@ -1,10 +1,12 @@
 # awesIO
 
-Input/Output standard for airborne wind energy systems
+Input/output standard for airborne wind energy systems.
 
-awesIO provides JSON Schema-based validation for AWE system configurations.
+awesIO provides JSON Schema-based validation for AWE system configurations and was developed in the context of IEA Wind Task 48. The terminology/ontology used follows the Airborne Wind Europe Glossary: https://airbornewindeurope.org/glossary-2
 
 Documentation: https://awegroup.github.io/awesIO/
+
+
 
 ## Available Schemas
 
