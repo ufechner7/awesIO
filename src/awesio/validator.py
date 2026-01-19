@@ -51,16 +51,14 @@ def _enforce_no_additional_properties(schema):
 
 
 def validate(
-    input: dict | str | Path, schema_type: str, restrictive: bool = True, defaults: bool = False,
+    input: dict | str | Path, restrictive: bool = True, defaults: bool = False,
 ) -> None:
     """
-    Validates a given AWESIO input based on the selected schema type.
+    Validates a given AWESIO input by auto-detecting the schema type from metadata.
 
     Args:
         input (dict | str | Path): Input data as a dictionary or a path to a YAML file 
             containing the data to be validated.
-        schema_type (str): Type of schema to be used for validation. This must correspond 
-            to one of the schema files available in the ``schemas`` folder.
         restrictive (bool, optional): If True, the schema will be modified to enforce
             that no additional properties are allowed. Defaults to True.
         defaults (bool, optional): If True, default values specified in the schema will 
@@ -69,6 +67,7 @@ def validate(
     Raises:
         FileNotFoundError: If the schema file corresponding to the schema type is not found.
         TypeError: If the input type is not supported (must be dict, str, or Path-like).
+        ValueError: If the schema type cannot be determined from the input data.
         jsonschema.exceptions.ValidationError: If the input data fails validation
             against the schema.
         jsonschema.exceptions.SchemaError: If the schema itself is invalid.
@@ -77,18 +76,28 @@ def validate(
         dict: The validated input data. If `defaults` is True, the returned data will 
         include default values specified in the schema.
     """
-    schema_file = schemaPath / f"{schema_type}.yaml"
-    if not schema_file.exists():
-        schema_file = schemaPath / f"{schema_type}.yml"
-    if not schema_file.exists():
-        raise FileNotFoundError(f"Schema file {schema_file} not found.")
-
     if type(input) is dict:
         data = copy.deepcopy(input)
     elif type(input) in [str, Path, PosixPath, WindowsPath]:
         data = load_yaml(input)
     else:
         raise TypeError(f"Input type {type(input)} is not supported.")
+    
+    # Auto-detect schema_type from metadata
+    if "metadata" not in data or "schema" not in data["metadata"]:
+        raise ValueError(
+            "Schema type could not be automatically determined. "
+            "The input data must contain 'metadata.schema' field."
+        )
+    schema_filename = data["metadata"]["schema"]
+    # Remove .yml or .yaml extension to get schema_type
+    schema_type = schema_filename.replace(".yml", "").replace(".yaml", "")
+    
+    schema_file = schemaPath / f"{schema_type}.yaml"
+    if not schema_file.exists():
+        schema_file = schemaPath / f"{schema_type}.yml"
+    if not schema_file.exists():
+        raise FileNotFoundError(f"Schema file {schema_file} not found.")
 
     schema = load_yaml(schema_file)
     if restrictive:

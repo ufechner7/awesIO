@@ -28,10 +28,10 @@ awesIO provides a common language for describing AWE systems, enabling:
 Key Features
 ------------
 
-* 📋 **YAML-based schemas** - Human-readable, version-controllable specifications
-* ✅ **Built-in validation** - Automatic checking of input file correctness
-* 🔄 **Tool integration** - Works with simulation frameworks like AWESPA
-* 📚 **Comprehensive coverage** - Schemas for all major AWE subsystems
+* YAML-based schemas - Human-readable, version-controllable specifications
+* Built-in validation - Automatic checking of input file correctness
+* Tool integration - Works with simulation frameworks like AWESPA
+* Comprehensive coverage - Schemas for all major AWE subsystems
 
 AWE System Components
 =====================

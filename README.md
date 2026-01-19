@@ -49,7 +49,7 @@ After installation, you can import the package in your Python code:
 
 ```python
 import awesio
-from awesio.validator import validate_yaml
+from awesio.validator import validate
 from awesio.yaml import load_yaml
 
 ```

@@ -2,9 +2,7 @@ $schema: http://json-schema.org/draft-07/schema#
 $id: power_curves_schema
 title: Power Curves Data Schema
 description: >
-  Schema for AWES power curves data including cluster-specific power outputs.
-  Power curves represent the relationship between wind speed and power output
-  for different wind profile clusters.
+  Schema for AWES power curves data with cluster-specific power outputs.
 
 type: object
 required:
@@ -27,23 +25,17 @@ properties:
     properties:
       name:
         type: string
-        description: Human-readable name for this power curves dataset
       description:
         type: string
-        description: Detailed description of the power curves data
       note:
         type: string
-        description: Additional notes or caveats about this data
       awesIO_version:
         type: string
-        description: Version of awesIO schema specification
       schema:
         type: string
         const: power_curves_schema.yml
-        description: Reference to the schema file
       time_created:
         type: string
-        description: Timestamp of data creation
       model_config:
         type: object
         required:
@@ -58,31 +50,24 @@ properties:
           wing_area_m2:
             type: number
             minimum: 0
-            description: Wing area in square meters
           nominal_power_w:
             type: number
             minimum: 0
-            description: Nominal power output in Watts
           nominal_tether_force_n:
             type: number
             minimum: 0
-            description: Nominal tether force in Newtons
           cut_in_wind_speed_m_s:
             type: number
             minimum: 0
-            description: Cut-in wind speed in m/s
           cut_out_wind_speed_m_s:
             type: number
             minimum: 0
-            description: Cut-out wind speed in m/s
           operating_altitude_m:
             type: number
             minimum: 0
-            description: Operating altitude in meters
           tether_length_operational_m:
             type: number
             minimum: 0
-            description: Operational tether length in meters
         additionalProperties: false
       wind_resource:
         type: object
@@ -90,125 +75,84 @@ properties:
           n_clusters:
             type: integer
             minimum: 1
-            description: Number of wind profile clusters
           reference_height_m:
             type: number
             minimum: 0
-            description: Reference height in meters
           location:
             type: object
-            required:
-              - latitude
-              - longitude
             properties:
               latitude:
                 type: number
-                minimum: -90
-                maximum: 90
-                description: Latitude in degrees
               longitude:
                 type: number
-                minimum: -180
-                maximum: 180
-                description: Longitude in degrees
             additionalProperties: false
+          time_range:
+            type: object
           data_source:
             type: string
-            description: Data source (e.g., ERA5, MERRA2)
         additionalProperties: false
-    additionalProperties: true
+    additionalProperties: false
 
   altitudes_m:
     type: array
     items:
       type: number
-      minimum: 0
-    minItems: 1
-    description: Array of altitudes in meters
 
   reference_wind_speeds_m_s:
     type: array
     items:
       type: number
-      minimum: 0
-    minItems: 1
-    description: Array of reference wind speeds in m/s
 
   power_curves:
     type: array
     items:
       type: object
       required:
-        - u_normalized
-        - v_normalized
-        - cycle_power_w
+        - profile_id
+        - speed_ratio_at_operating_altitude
+        - probability_weight
       properties:
         profile_id:
           type: integer
           minimum: 1
-          description: Profile identifier
         speed_ratio_at_operating_altitude:
           type: number
-          minimum: 0
-          description: Speed ratio at operating altitude
         u_normalized:
           type: array
           items:
             type: number
-          minItems: 1
-          description: Normalized u-component of wind speed at each altitude
         v_normalized:
           type: array
           items:
             type: number
-          minItems: 1
-          description: Normalized v-component of wind speed at each altitude
         probability_weight:
           type: number
           minimum: 0
           maximum: 1
-          description: Probability weight for this cluster (0-1)
         cycle_power_w:
           type: array
           items:
             type: number
-          minItems: 1
-          description: Cycle power output in Watts for each reference wind speed
         reel_out_power_w:
           type: array
           items:
             type: number
-          minItems: 1
-          description: Reel-out power in Watts for each reference wind speed
         reel_in_power_w:
           type: array
           items:
             type: number
-          minItems: 1
-          description: Reel-in power in Watts for each reference wind speed
         reel_out_time_s:
           type: array
           items:
             type: number
-            minimum: 0
-          minItems: 1
-          description: Reel-out time in seconds for each reference wind speed
         reel_in_time_s:
           type: array
           items:
             type: number
-            minimum: 0
-          minItems: 1
-          description: Reel-in time in seconds for each reference wind speed
         cycle_time_s:
           type: array
           items:
             type: number
-            minimum: 0
-          minItems: 1
-          description: Total cycle time in seconds for each reference wind speed
       additionalProperties: false
-    minItems: 1
-    description: Array of power curves for each wind profile cluster
 
 additionalProperties: false
