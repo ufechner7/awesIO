@@ -6,6 +6,7 @@
 sphinx>=5.0
 furo>=2024.8.6
 sphinx-multiversion>=0.2.4
+sphinx-jsonschema>=1.19
 
 # YAML processing
 pyyaml>=6.0

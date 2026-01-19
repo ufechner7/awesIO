@@ -39,6 +39,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
+    "sphinx-jsonschema",
 ]
 
 try:

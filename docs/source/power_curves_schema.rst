@@ -28,3 +28,8 @@ To validate a file against this schema:
    data = validate("your_file.yml")
 
 The validator automatically detects the schema type from the ``metadata.schema`` field in your YAML file.
+
+Schema Structure
+----------------
+
+.. jsonschema:: ../../src/awesio/schemas/power_curves_schema.yml
