@@ -42,7 +42,7 @@ pip install git+https://github.com/awegroup/awesIO.git@v0.1.0
 
 ```bash
 conda activate your_environment
-pip install git+https://github.com/yourusername/awesIO.git
+pip install git+https://github.com/awegroup/awesIO.git
 ```
 
 ## Usage
