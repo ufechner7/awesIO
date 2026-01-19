@@ -48,11 +48,6 @@ jobs:
           pip install -r docs/requirements.txt
           pip install -e .
 
-      - name: Generate schema documentation
-        run: |
-          cd docs
-          python schema_export.py --placeholders
-
       - name: Generate version switcher
         run: |
           cd docs

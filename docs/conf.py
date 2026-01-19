@@ -25,8 +25,8 @@ sys.path.insert(0, str(projectRoot / "docs"))
 
 # -- Project information -----------------------------------------------------
 project = "awesIO"
-copyright = "2026, AWE Research Community"
-author = "AWE Research Community"
+copyright = "2026, awesIO Developers"
+author = "awesIO Developers"
 release = "0.1.0"
 version = "0.1"
 
@@ -39,8 +39,14 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
-    "sphinx_multiversion",
 ]
+
+try:
+    import sphinx_multiversion  # noqa: F401
+except ImportError:
+    print("Warning: sphinx_multiversion not installed; skipping multi-version support.")
+else:
+    extensions.append("sphinx_multiversion")
 
 # Templates path
 templates_path = ["_templates"]
@@ -52,19 +58,11 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 master_doc = "index"
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
 
-# Theme options for sphinx_rtd_theme
+# Theme options for furo
 html_theme_options = {
-    "logo_only": False,
-    "display_version": True,
-    "prev_next_buttons_location": "bottom",
-    "style_external_links": False,
-    "collapse_navigation": False,
-    "sticky_navigation": True,
-    "navigation_depth": 4,
-    "includehidden": True,
-    "titles_only": False,
+    "navigation_with_keys": True,
 }
 
 # Static files path (custom CSS, generated schema HTML, etc.)
@@ -129,47 +127,4 @@ autodoc_default_options = {
     "exclude-members": "__weakref__",
 }
 
-# -- Build hooks for schema generation ---------------------------------------
-def setup(app):
-    """Set up Sphinx build hooks.
-    
-    This function is called by Sphinx during initialization. It registers
-    a hook to auto-generate HTML schema documentation before the build starts.
-    
-    Args:
-        app: The Sphinx application object.
-    """
-    app.connect("builder-inited", generate_schema_docs)
 
-
-def generate_schema_docs(app):
-    """Generate HTML documentation from YAML schemas.
-    
-    This hook runs before the documentation build and generates HTML reference
-    pages from the YAML schema files using json-schema-for-humans.
-    
-    Args:
-        app: The Sphinx application object.
-    """
-    import subprocess
-    
-    docsDir = Path(__file__).parent
-    schemaExportScript = docsDir / "schema_export.py"
-    
-    if schemaExportScript.exists():
-        print("Generating schema HTML documentation...")
-        try:
-            result = subprocess.run(
-                [sys.executable, str(schemaExportScript)],
-                cwd=str(docsDir),
-                capture_output=True,
-                text=True
-            )
-            if result.returncode != 0:
-                print(f"Warning: Schema export returned non-zero: {result.stderr}")
-            else:
-                print("Schema HTML generation complete.")
-        except Exception as e:
-            print(f"Warning: Could not generate schema docs: {e}")
-    else:
-        print(f"Warning: schema_export.py not found at {schemaExportScript}")

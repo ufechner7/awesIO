@@ -36,7 +36,7 @@ Key Features
 AWE System Components
 =====================
 
-awesIO defines schemas for all major components of an Airborne Wind Energy system:
+awesIO defines schemas for complete AWE systems and their operational parameters:
 
 .. list-table::
    :header-rows: 1
@@ -45,15 +45,9 @@ awesIO defines schemas for all major components of an Airborne Wind Energy syste
    * - Component
      - Description
      - Schema Reference
-   * - **Airborne System**
-     - Kite geometry, aerodynamics, structural properties
-     - :doc:`source/airborne_schema`
-   * - **Tether**
-     - Tether material, dimensions, drag properties
-     - :doc:`source/tether_schema`
-   * - **Ground Station**
-     - Winch, generator, drum specifications
-     - :doc:`source/ground_station_schema`
+   * - **Complete System**
+     - Wing, bridle, control system, tether, and ground station in one schema
+     - :doc:`source/system_schema`
    * - **Wind Resource**
      - Wind profile clusters, probability distributions
      - :doc:`source/wind_resource_schema`
@@ -61,7 +55,7 @@ awesIO defines schemas for all major components of an Airborne Wind Energy syste
      - Power output vs. wind speed relationships
      - :doc:`source/power_curves_schema`
    * - **Operational Constraints**
-     - Operating limits, safety boundaries
+     - Operating limits, safety boundaries, terrain constraints
      - :doc:`source/operational_constraints_schema`
 
 
@@ -88,23 +82,41 @@ Or clone and install in development mode:
 Quick Example
 -------------
 
-Here's a simple example of loading and validating an AWE configuration:
+Here's a simple example of validating an AWE configuration:
 
 .. code-block:: python
 
-   from awesio import validate, load_yaml
+   from awesio.validator import validate
    
-   # Load a wind resource file
-   wind_data = load_yaml("wind_resource.yaml")
-   
-   # Validate against the schema
-   validated_data = validate(
-       "wind_resource.yaml",
-       schema_type="wind_resource_schema"
-   )
+   # Auto-detects schema from file metadata
+   validated_data = validate("path/to/config.yml")
    
    # Access validated data
-   print(f"Number of clusters: {validated_data['metadata']['n_clusters']}")
+   print(f"System name: {validated_data['metadata']['name']}")
+
+Validation Script
+-----------------
+
+Validate multiple files at once:
+
+.. code-block:: bash
+
+   # Edit scripts/validate_yaml.py to set file paths
+   python scripts/validate_yaml.py
+
+Schema Auto-Detection
+---------------------
+
+Each YAML file must include a schema reference in its metadata:
+
+.. code-block:: yaml
+
+   metadata:
+     name: My AWE System
+     description: System description
+     note: Additional notes
+     awesIO_version: 0.1.0
+     schema: system_schema.yml  # Auto-detected by validator
 
 Table of Contents
 =================
@@ -114,16 +126,12 @@ Table of Contents
    :caption: User Guide
 
    source/getting_started
-   source/examples
-   source/how_to_build_a_kite_model
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Schema Reference
 
-   source/airborne_schema
-   source/tether_schema
-   source/ground_station_schema
+   source/system_schema
    source/wind_resource_schema
    source/power_curves_schema
    source/operational_constraints_schema
@@ -133,7 +141,6 @@ Table of Contents
    :caption: Development
 
    source/developer_guide
-   source/api_reference
    source/changelog
 
 

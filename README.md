@@ -2,15 +2,17 @@
 
 Input/Output standard for airborne wind energy systems
 
-awesIO reuses the windIO code with modifications.
+awesIO provides JSON Schema-based validation for AWE system configurations.
+
+Documentation: https://awegroup.github.io/awesIO/
+
+## Available Schemas
 
 Currently includes schemas for:
+- Complete airborne systems
 - Power curves
-- Wind resource
-- Airborne systems
-- Ground stations
+- Wind resource data
 - Operational constraints
-- Tether specifications
 
 
 ## Installation
@@ -45,15 +47,26 @@ pip install git+https://github.com/yourusername/awesIO.git
 
 ## Usage
 
-After installation, you can import the package in your Python code:
+After installation, you can import and use awesIO:
 
 ```python
-import awesio
 from awesio.validator import validate
-from awesio.yaml import load_yaml
 
+# Validates YAML file (auto-detects schema from file metadata)
+data = validate("path/to/config.yml")
 ```
 
 ## Examples
 
 Example YAML configuration files are available in the `examples/` directory.
+
+### Developers
+
+Clone the repo, then install dev dependencies:
+
+```bash
+pip install -e .
+pip install -r docs/requirements.txt
+```
+
+For the developer guide check: https://awegroup.github.io/awesIO/developer_guide

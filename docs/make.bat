@@ -13,7 +13,6 @@ set BUILDDIR=_build
 REM Put it first so that "make" without argument is like "make help".
 if "%1" == "" goto help
 if "%1" == "help" goto help
-if "%1" == "schemas" goto schemas
 if "%1" == "html" goto html
 if "%1" == "clean" goto clean
 if "%1" == "serve" goto serve
@@ -26,14 +25,7 @@ goto default
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end
 
-:schemas
-echo Generating schema HTML documentation...
-python schema_export.py --placeholders
-goto end
-
 :html
-echo Generating schema HTML documentation...
-python schema_export.py --placeholders
 echo Building HTML documentation...
 %SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end
@@ -41,7 +33,6 @@ goto end
 :clean
 echo Cleaning build directory...
 if exist %BUILDDIR% rmdir /s /q %BUILDDIR%
-if exist _static\*_schema.html del /q _static\*_schema.html
 goto end
 
 :serve
@@ -57,7 +48,6 @@ goto end
 
 :deploy
 call :clean
-call :schemas
 call :switcher
 %SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end

@@ -1,19 +1,19 @@
-Power Curves Data Schema
-========================
+AWE System Schema
+==================================
 
-Schema for AWES power curves data with cluster-specific power outputs.
+Complete schema for AWE system configurations with type-dependent validation. Validates wing, bridle, control system, tether, and ground station components.
 
 Schema File
 -----------
 
 .. code-block:: text
 
-   src/awesio/schemas/power_curves_schema.yml
+   src/awesio/schemas/system_schema.yml
 
 Example File
 ------------
 
-See: ``examples/ground_gen/soft_kite_pumping_ground_gen_power_curves.yml``
+See: ``examples/ground_gen/soft_kite_pumping_ground_gen_system.yml``
 
 Validation
 ----------

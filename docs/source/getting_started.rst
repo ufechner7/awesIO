@@ -2,227 +2,87 @@
 Getting Started
 ===============
 
-This guide will help you get started with awesIO for describing and validating 
-Airborne Wind Energy (AWE) system configurations.
+awesIO provides YAML schemas and validation utilities for airborne wind energy
+system configurations. This page covers installation, basic validation, and how
+to choose the right schema for your data.
 
-What is awesIO?
-===============
+Prerequisites
+=============
 
-awesIO is a schema specification project for AWE systems. It provides:
+- Python 3.9 or newer
+- A YAML file that includes a schema reference in ``metadata.schema``
 
-1. **YAML Schemas** - Formal definitions of data structures for AWE components
-2. **Validation Tools** - Python utilities to validate YAML files against schemas
-3. **Documentation** - Comprehensive reference for all schema fields
+Install
+=======
 
-Why Use awesIO?
----------------
-
-* **Standardization**: Common format for exchanging AWE system data
-* **Validation**: Catch configuration errors before running simulations
-* **Documentation**: Self-documenting configuration files
-* **Interoperability**: Share configurations between different tools and teams
-
-Installation
-============
-
-From Git Repository
--------------------
+Install directly from the repository:
 
 .. code-block:: bash
 
-   # Install latest version
    pip install git+https://github.com/awegroup/awesIO.git
 
-   # Install specific version
-   pip install git+https://github.com/awegroup/awesIO.git@v0.1.0
 
-   # Install specific branch
-   pip install git+https://github.com/awegroup/awesIO.git@develop
-
-Development Installation
-------------------------
-
-For contributing to awesIO or local development:
+Install from a specific branch:
 
 .. code-block:: bash
 
-   git clone https://github.com/awegroup/awesIO.git
-   cd awesIO
-   pip install -e ".[dev]"
+   pip install git+https://github.com/awegroup/awesIO.git@branch-name
 
-Basic Usage
-===========
+Install from a specific commit or tag:
+.. code-block:: bash
 
-Loading YAML Files
-------------------
+   pip install git+https://github.com/awegroup/awesIO.git@commit-hash
+   pip install git+https://github.com/awegroup/awesIO.git@v0.1.0
 
-.. code-block:: python
+Validate a YAML file
+====================
 
-   from awesio import load_yaml
-   
-   # Load any YAML file
-   data = load_yaml("my_configuration.yaml")
-   
-   # Access data as dictionary
-   print(data["metadata"]["name"])
-
-Validating Against Schemas
---------------------------
+The validator auto-detects the schema using ``metadata.schema``.
 
 .. code-block:: python
 
-   from awesio import validate
-   
-   # Validate a wind resource file
-   validated = validate(
-       "wind_resource.yaml",
-       schema_type="wind_resource_schema"
-   )
-   
-   # Validate a power curves file
-   validated = validate(
-       "power_curves.yaml",
-       schema_type="power_curves_schema"
-   )
+   from awesio.validator import validate
 
-The ``validate`` function will:
+   data = validate("path/to/your_file.yml")
 
-* Load the YAML file
-* Check it against the specified schema
-* Raise ``ValidationError`` if the file is invalid
-* Return the validated data if successful
+If validation fails, the error message includes the exact path of the
+failing property and the expected constraints.
 
-Validation with Default Values
-------------------------------
-
-Schemas can define default values for optional fields:
-
-.. code-block:: python
-
-   from awesio import validate
-   
-   # Apply default values from schema
-   data = validate(
-       "minimal_config.yaml",
-       schema_type="power_curves_schema",
-       defaults=True  # Fill in missing fields with defaults
-   )
-
-Strict vs. Permissive Validation
---------------------------------
-
-By default, validation is strict (no extra fields allowed):
-
-.. code-block:: python
-
-   # Strict validation (default) - extra fields cause errors
-   validate(data, schema_type="wind_resource_schema", restrictive=True)
-   
-   # Permissive validation - extra fields are ignored
-   validate(data, schema_type="wind_resource_schema", restrictive=False)
-
-AWE System Components
-=====================
-
-awesIO defines schemas for all major AWE components:
-
-Airborne System
----------------
-
-The airborne system (kite) specification includes:
-
-* **Geometry**: Wing span, chord, area, aspect ratio
-* **Aerodynamics**: Lift and drag coefficients, polar curves
-* **Mass Properties**: Total mass, center of gravity, inertia
-* **Structural Properties**: Material specifications, stiffness
-
-See :doc:`airborne_schema` for the complete reference.
-
-Tether
-------
-
-The tether specification includes:
-
-* **Dimensions**: Length, diameter
-* **Material**: Density, strength, stiffness
-* **Aerodynamic**: Drag coefficient
-
-See :doc:`tether_schema` for the complete reference.
-
-Ground Station
---------------
-
-The ground station specification includes:
-
-* **Winch**: Drum dimensions, motor specifications
-* **Generator**: Power rating, efficiency curves
-* **Control**: Reel speed limits, force limits
-
-See :doc:`ground_station_schema` for the complete reference.
-
-Wind Resource
--------------
-
-The wind resource specification includes:
-
-* **Altitude Profile**: Wind speed vs. height
-* **Clustering**: Representative wind conditions
-* **Probability**: Occurrence frequency of each cluster
-
-See :doc:`wind_resource_schema` for the complete reference.
-
-Power Curves
-------------
-
-The power curves specification includes:
-
-* **Power vs. Wind Speed**: For each wind profile cluster
-* **Operational Phases**: Reel-out, reel-in, transition
-* **Cycle Timing**: Phase durations
-
-See :doc:`power_curves_schema` for the complete reference.
-
-Example Workflow
+Schema selection
 ================
 
-Here's a typical workflow for using awesIO in an AWE simulation:
+Choose the schema by setting the schema filename in the YAML metadata.
 
-.. code-block:: python
+.. code-block:: yaml
 
-   from awesio import validate, load_yaml
-   
-   # 1. Load and validate wind resource
-   wind = validate(
-       "examples/wind_resource.yml",
-       schema_type="wind_resource_schema"
-   )
-   
-   # 2. Load and validate power curves
-   power = validate(
-       "examples/power_curves.yml",
-       schema_type="power_curves_schema"
-   )
-   
-   # 3. Use validated data in your simulation
-   for cluster in wind["clusters"]:
-       cluster_id = cluster["id"]
-       probability = cluster["probability"]
-       
-       # Find corresponding power curve
-       for curve in power["power_curves"]:
-           if curve["profile_id"] == cluster_id:
-               cycle_power = curve["cycle_power_w"]
-               # ... run simulation
-   
-   # 4. Calculate Annual Energy Production
-   aep = sum(
-       p["probability_weight"] * sum(p["cycle_power_w"])
-       for p in power["power_curves"]
-   )
+   metadata:
+     name: Example configuration
+     description: System description
+     note: Notes for reviewers
+     awesIO_version: 0.1.0
+     schema: system_schema.yml
 
-Next Steps
+Available schemas
+=================
+
+- ``system_schema.yml``: complete airborne system configurations
+- ``power_curves_schema.yml``: power curve datasets
+- ``wind_resource_schema.yml``: wind resource data
+- ``operational_constraints_schema.yml``: operational constraints
+
+Examples
+========
+
+File examples are available in the ``examples/`` directory. Start with:
+
+- ``examples/ground_gen/soft_kite_pumping_ground_gen_system.yml``
+- ``examples/ground_gen/soft_kite_pumping_ground_gen_power_curves.yml``
+- ``examples/ground_gen/soft_kite_pumping_ground_gen_operational_constraints.yml``
+- ``examples/wind_resource.yml``
+
+Next steps
 ==========
 
-* :doc:`examples` - Complete example configurations
-* :doc:`how_to_build_a_kite_model` - Tutorial for creating kite models
-* Schema references for detailed field descriptions
+- Review the schema reference pages for field definitions.
+- Use the developer guide if you plan to contribute.
+

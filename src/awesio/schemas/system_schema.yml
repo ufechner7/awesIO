@@ -337,7 +337,7 @@ definitions:
         type: string
       type:
         type: string
-        enum: [kite_control_unit, autopilot, manual_control]
+        enum: [kite_control_unit]
       version:
         type: [string, number]
       aerodynamics:

@@ -14,12 +14,8 @@ help:
 
 .PHONY: help Makefile
 
-# Generate schema HTML before building docs
-schemas:
-	python schema_export.py --placeholders
-
-# Build HTML with schema generation
-html: schemas
+# Build HTML documentation
+html:
 	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 # Build multi-version documentation
@@ -29,7 +25,6 @@ multiversion:
 # Clean build directory
 clean:
 	rm -rf $(BUILDDIR)/*
-	rm -f _static/*_schema.html
 
 # Serve documentation locally
 serve: html
@@ -40,7 +35,7 @@ switcher:
 	python generate_switcher_json.py
 
 # Full build for deployment
-deploy: clean schemas switcher
+deploy: clean switcher
 	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 # Catch-all target: route all unknown targets to Sphinx using the new
