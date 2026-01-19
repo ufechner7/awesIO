@@ -1,0 +1,15 @@
+# awesIO Documentation Build Requirements
+#
+# Install with: pip install -r requirements.txt
+
+# Core Sphinx
+sphinx>=5.0
+furo>=2024.8.6
+sphinx-multiversion>=0.2.4
+
+# YAML processing
+pyyaml>=6.0
+ruamel.yaml>=0.17
+
+# Optional: for API documentation
+sphinx-autodoc-typehints>=1.19

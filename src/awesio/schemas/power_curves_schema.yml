@@ -1,0 +1,158 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: power_curves_schema
+title: Power Curves Data Schema
+description: >
+  Schema for AWES power curves data with cluster-specific power outputs.
+
+type: object
+required:
+  - metadata
+  - altitudes_m
+  - reference_wind_speeds_m_s
+  - power_curves
+
+properties:
+  metadata:
+    type: object
+    required:
+      - name
+      - description
+      - note
+      - awesIO_version
+      - schema
+      - time_created
+      - model_config
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      note:
+        type: string
+      awesIO_version:
+        type: string
+      schema:
+        type: string
+        const: power_curves_schema.yml
+      time_created:
+        type: string
+      model_config:
+        type: object
+        required:
+          - wing_area_m2
+          - nominal_power_w
+          - nominal_tether_force_n
+          - cut_in_wind_speed_m_s
+          - cut_out_wind_speed_m_s
+          - operating_altitude_m
+          - tether_length_operational_m
+        properties:
+          wing_area_m2:
+            type: number
+            minimum: 0
+          nominal_power_w:
+            type: number
+            minimum: 0
+          nominal_tether_force_n:
+            type: number
+            minimum: 0
+          cut_in_wind_speed_m_s:
+            type: number
+            minimum: 0
+          cut_out_wind_speed_m_s:
+            type: number
+            minimum: 0
+          operating_altitude_m:
+            type: number
+            minimum: 0
+          tether_length_operational_m:
+            type: number
+            minimum: 0
+        additionalProperties: false
+      wind_resource:
+        type: object
+        properties:
+          n_clusters:
+            type: integer
+            minimum: 1
+          reference_height_m:
+            type: number
+            minimum: 0
+          location:
+            type: object
+            properties:
+              latitude:
+                type: number
+              longitude:
+                type: number
+            additionalProperties: false
+          time_range:
+            type: object
+          data_source:
+            type: string
+        additionalProperties: false
+    additionalProperties: false
+
+  altitudes_m:
+    type: array
+    items:
+      type: number
+
+  reference_wind_speeds_m_s:
+    type: array
+    items:
+      type: number
+
+  power_curves:
+    type: array
+    items:
+      type: object
+      required:
+        - profile_id
+        - speed_ratio_at_operating_altitude
+        - probability_weight
+      properties:
+        profile_id:
+          type: integer
+          minimum: 1
+        speed_ratio_at_operating_altitude:
+          type: number
+        u_normalized:
+          type: array
+          items:
+            type: number
+        v_normalized:
+          type: array
+          items:
+            type: number
+        probability_weight:
+          type: number
+          minimum: 0
+          maximum: 1
+        cycle_power_w:
+          type: array
+          items:
+            type: number
+        reel_out_power_w:
+          type: array
+          items:
+            type: number
+        reel_in_power_w:
+          type: array
+          items:
+            type: number
+        reel_out_time_s:
+          type: array
+          items:
+            type: number
+        reel_in_time_s:
+          type: array
+          items:
+            type: number
+        cycle_time_s:
+          type: array
+          items:
+            type: number
+      additionalProperties: false
+
+additionalProperties: false

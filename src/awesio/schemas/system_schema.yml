@@ -1,0 +1,672 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: system_schema
+title: Airborne Wind Energy System Schema
+description: >
+  Complete schema for AWE system configurations with type-dependent validation.
+  Validates wing, bridle, control system, tether, and ground station components.
+
+type: object
+required:
+  - metadata
+  - assembly
+  - components
+
+properties:
+  metadata:
+    type: object
+    required:
+      - name
+      - description
+      - note
+      - awesIO_version
+      - schema
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      note:
+        type: string
+      awesIO_version:
+        type: string
+      schema:
+        type: string
+        enum: [system_schema.yml]
+    additionalProperties: false
+
+  assembly:
+    type: object
+    required:
+      - airborne_type
+      - generation_type
+    properties:
+      airborne_type:
+        type: string
+        enum: [soft_kite, fixed_wing_aircraft, hybrid_kite]
+      generation_type:
+        type: string
+        enum: [pumping_ground_gen, rotary_ground_gen, fly_gen]
+    additionalProperties: false
+
+  components:
+    type: object
+    required:
+      - wing
+      - control_system
+      - tether
+      - ground_station
+    properties:
+      wing:
+        $ref: "#/definitions/wing"
+      bridle:
+        $ref: "#/definitions/bridle"
+      control_system:
+        $ref: "#/definitions/control_system"
+      tether:
+        $ref: "#/definitions/tether"
+      ground_station:
+        $ref: "#/definitions/ground_station"
+    additionalProperties: false
+
+additionalProperties: false
+
+definitions:
+  # ============================================================================
+  # WING - Type-dependent validation
+  # ============================================================================
+  wing:
+    type: object
+    required:
+      - name
+      - type
+      - version
+      - structure
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        enum: [LEI_soft_kite, ram_air_soft_kite, fixed_wing_aircraft]
+      version:
+        type: [string, number]
+      aerodynamics:
+        type: object
+        properties:
+          simple_aero_model:
+            type: object
+            properties:
+              lift_coefficient_reel_out:
+                type: number
+              drag_coefficient_reel_out:
+                type: number
+              lift_coefficient_reel_in:
+                type: number
+              drag_coefficient_reel_in:
+                type: number
+            additionalProperties: true
+          lift_polynomial:
+            type: ["null", array]
+          drag_polynomial:
+            type: ["null", array]
+          wing_airfoils:
+            type: object
+            properties:
+              alpha_range:
+                type: array
+              reynolds:
+                type: number
+              headers:
+                type: array
+              data:
+                type: array
+            additionalProperties: true
+        additionalProperties: true
+      structure:
+        type: object
+    allOf:
+      # LEI soft kite
+      - if:
+          properties:
+            type:
+              const: LEI_soft_kite
+        then:
+          properties:
+            structure:
+              type: object
+              required:
+                - projected_surface_area_m2
+                - span_m
+                - aspect_ratio
+                - mass_kg
+              properties:
+                projected_surface_area_m2:
+                  type: number
+                  minimum: 0
+                span_m:
+                  type: number
+                  minimum: 0
+                aspect_ratio:
+                  type: number
+                  minimum: 0
+                mass_kg:
+                  type: number
+                  minimum: 0
+                flattening_factor:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                wing_sections:
+                  type: object
+                material:
+                  type: ["null", object]
+              additionalProperties: true
+      
+      # Ram air soft kite - similar to LEI
+      - if:
+          properties:
+            type:
+              const: ram_air_soft_kite
+        then:
+          properties:
+            structure:
+              type: object
+              required:
+                - projected_surface_area_m2
+                - span_m
+                - aspect_ratio
+                - mass_kg
+              properties:
+                projected_surface_area_m2:
+                  type: number
+                  minimum: 0
+                span_m:
+                  type: number
+                  minimum: 0
+                aspect_ratio:
+                  type: number
+                  minimum: 0
+                mass_kg:
+                  type: number
+                  minimum: 0
+                flattening_factor:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                wing_sections:
+                  type: object
+                material:
+                  type: ["null", object]
+              additionalProperties: true
+      
+      # Fixed wing aircraft
+      - if:
+          properties:
+            type:
+              const: fixed_wing
+        then:
+          properties:
+            structure:
+              type: object
+              required:
+                - wing_area_m2
+                - span_m
+                - aspect_ratio
+                - mass_kg
+              properties:
+                wing_area_m2:
+                  type: number
+                  minimum: 0
+                span_m:
+                  type: number
+                  minimum: 0
+                aspect_ratio:
+                  type: number
+                  minimum: 0
+                mass_kg:
+                  type: number
+                  minimum: 0
+                chord_m:
+                  type: number
+                  minimum: 0
+                taper_ratio:
+                  type: number
+                dihedral_angle_deg:
+                  type: number
+                sweep_angle_deg:
+                  type: number
+                wing_sections:
+                  type: object
+                material:
+                  type: object
+              additionalProperties: true
+      
+      # Rigid wing - same as fixed_wing
+      - if:
+          properties:
+            type:
+              const: rigid_wing
+        then:
+          properties:
+            structure:
+              type: object
+              required:
+                - wing_area_m2
+                - span_m
+                - aspect_ratio
+                - mass_kg
+              properties:
+                wing_area_m2:
+                  type: number
+                  minimum: 0
+                span_m:
+                  type: number
+                  minimum: 0
+                aspect_ratio:
+                  type: number
+                  minimum: 0
+                mass_kg:
+                  type: number
+                  minimum: 0
+                chord_m:
+                  type: number
+                  minimum: 0
+                taper_ratio:
+                  type: number
+                dihedral_angle_deg:
+                  type: number
+                sweep_angle_deg:
+                  type: number
+                wing_sections:
+                  type: object
+                material:
+                  type: object
+              additionalProperties: true
+    additionalProperties: false
+
+  # ============================================================================
+  # BRIDLE - Type-dependent validation
+  # ============================================================================
+  bridle:
+    type: object
+    required:
+      - name
+      - type
+      - version
+      - structure
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        enum: [LEI_soft_kite_bridle]
+      version:
+        type: [string, number]
+      aerodynamics:
+        type: ["null", object]
+      structure:
+        type: object
+        required:
+          - mass_kg
+        properties:
+          mass_kg:
+            type: number
+            minimum: 0
+          bridle_nodes:
+            type: object
+          bridle_lines:
+            type: object
+          bridle_connections:
+            type: object
+          material:
+            type: ["null", object]
+        additionalProperties: true
+    additionalProperties: false
+
+  # ============================================================================
+  # CONTROL SYSTEM - Type-dependent validation
+  # ============================================================================
+  control_system:
+    type: object
+    required:
+      - name
+      - type
+      - version
+      - structure
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        enum: [kite_control_unit]
+      version:
+        type: [string, number]
+      aerodynamics:
+        type: object
+        properties:
+          drag_coefficient:
+            type: number
+        additionalProperties: true
+      structure:
+        type: object
+        required:
+          - mass_kg
+        properties:
+          mass_kg:
+            type: number
+            minimum: 0
+          frontal_area_m2:
+            type: number
+            minimum: 0
+        additionalProperties: true
+      actuators:
+        type: object
+        properties:
+          max_steering_line_speed_m_s:
+            type: number
+            minimum: 0
+          max_depower_line_speed_m_s:
+            type: number
+            minimum: 0
+          max_steering_actuator_force_n:
+            type: number
+            minimum: 0
+          max_depower_actuator_force_n:
+            type: number
+            minimum: 0
+        additionalProperties: true
+    additionalProperties: false
+
+  # ============================================================================
+  # TETHER - Type-dependent validation
+  # ============================================================================
+  tether:
+    type: object
+    required:
+      - name
+      - type
+      - version
+      - structure
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        enum: [non_conductive_tether, conductive_tether]
+      version:
+        type: [string, number]
+      aerodynamics:
+        type: object
+        properties:
+          drag_coefficient:
+            type: number
+        additionalProperties: false
+      structure:
+        type: object
+    allOf:
+      # Non-conductive tether
+      - if:
+          properties:
+            type:
+              object: non_conductive_tether
+        then:
+          properties:
+            structure:
+              type: object
+              required:
+                - length_m
+                - diameter_m
+                - density_kg_m3
+                - max_tether_force_n
+                - conductive
+              properties:
+                length_m:
+                  type: number
+                  minimum: 0
+                diameter_m:
+                  type: number
+                  minimum: 0
+                density_kg_m3:
+                  type: number
+                  minimum: 0
+                max_tether_force_n:
+                  type: number
+                  minimum: 0
+                conductive:
+                  type: boolean
+                material:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    youngs_modulus_pa:
+                      type: number
+                    breaking_strength_n:
+                      type: number
+                    min_breaking_strength_n:
+                      type: number
+                    shear_modulus_pa:
+                      type: number
+                    breaking_strain:
+                      type: number
+                    poisson_ratio:
+                      type: number
+                  additionalProperties: true
+              additionalProperties: false
+      
+      - if:
+          properties:
+            type:
+              object: conductive_tether
+        then:
+          properties:
+            structure:
+              type: object
+              required:
+                - length_m
+                - diameter_m
+                - density_kg_m3
+                - max_tether_force_n
+                - conductive
+              properties:
+                length_m:
+                  type: number
+                  minimum: 0
+                diameter_m:
+                  type: number
+                  minimum: 0
+                density_kg_m3:
+                  type: number
+                  minimum: 0
+                max_tether_force_n:
+                  type: number
+                  minimum: 0
+                conductive:
+                  type: boolean
+                material:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    youngs_modulus_pa:
+                      type: number
+                    breaking_strength_n:
+                      type: number
+                    min_breaking_strength_n:
+                      type: number
+                    shear_modulus_pa:
+                      type: number
+                    breaking_strain:
+                      type: number
+                    poisson_ratio:
+                      type: number
+                  additionalProperties: true
+              additionalProperties: false
+      
+  # ============================================================================
+  # GROUND STATION - Type-dependent validation
+  # ============================================================================
+  ground_station:
+    type: object
+    required:
+      - name
+      - type
+      - version
+      - structure
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        enum: [pumping_ground_gen_station, rotary_ground_gen_station, fly_gen_station]
+      version:
+        type: [string, number]
+      structure:
+        type: object
+        required:
+          - mass_kg
+        properties:
+          mass_kg:
+            type: number
+            minimum: 0
+          footprint_m2:
+            type: number
+            minimum: 0
+          height_m:
+            type: number
+            minimum: 0
+        additionalProperties: false
+      drum:
+        type: object
+      generator:
+        type: object
+      gearbox:
+        type: object
+      storage:
+        type: object
+    allOf:
+      # Pumping ground-gen station
+      - if:
+          properties:
+            type:
+              const: pumping_ground_gen_station
+        then:
+          properties:
+            drum:
+              type: object
+              required:
+                - type
+                - max_tether_speed_m_s
+                - max_tether_force_n
+              properties:
+                type:
+                  type: string
+                  const: electric_winch
+                max_tether_speed_m_s:
+                  type: number
+                  minimum: 0
+                max_tether_force_n:
+                  type: number
+                  minimum: 0
+                max_winch_acceleration_m_s2:
+                  type: number
+                  minimum: 0
+                drum_diameter_m:
+                  type: number
+                  minimum: 0
+                drum_width_m:
+                  type: number
+                  minimum: 0
+              additionalProperties: false
+            generator:
+              type: object
+              required:
+                - type
+                - rated_power_kw
+              properties:
+                type:
+                  type: string
+                  enum: [permanent_magnet_synchronous, induction, dc]
+                rated_power_kw:
+                  type: number
+                  minimum: 0
+                max_power_kw:
+                  type: number
+                  minimum: 0
+                rated_speed_rpm:
+                  type: number
+                  minimum: 0
+                efficiency:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                voltage_v:
+                  type: number
+                  minimum: 0
+              additionalProperties: false
+            gearbox:
+              type: object
+              required:
+                - type
+                - gear_ratio
+              properties:
+                type:
+                  type: string
+                  enum: [planetary, helical, bevel]
+                gear_ratio:
+                  type: number
+                  minimum: 0
+                efficiency:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+              additionalProperties: false
+            storage:
+              type: object
+              required:
+                - type
+                - capacity_kwh
+              properties:
+                type:
+                  type: string
+                  enum: [battery_bank, flywheel, capacitor_bank]
+                capacity_kwh:
+                  type: number
+                  minimum: 0
+                max_charge_rate_kw:
+                  type: number
+                  minimum: 0
+                max_discharge_rate_kw:
+                  type: number
+                  minimum: 0
+                efficiency:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                state_of_charge_initial:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+              additionalProperties: false
+      
+      # Rotary ground-gen station
+      - if:
+          properties:
+            type:
+              const: rotary_ground_gen_station
+        then:
+          properties:
+            generator:
+              type: object
+            gearbox:
+              type: object
+      
+      # Fly-gen station
+      - if:
+          properties:
+            type:
+              const: fly_gen_station
+        then:
+          properties:
+            storage:
+              type: object
+    additionalProperties: false

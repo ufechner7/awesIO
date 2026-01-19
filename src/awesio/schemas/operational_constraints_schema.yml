@@ -1,0 +1,230 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: operational_constraints_schema
+title: Operational Constraints Schema
+description: >
+  Schema for AWES operational constraints with terrain-based azimuth zones.
+  Supports type-specific constraints for different system types.
+
+type: object
+required:
+  - metadata
+
+properties:
+  metadata:
+    type: object
+    required:
+      - name
+      - description
+      - note
+      - awesIO_version
+      - schema
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      note:
+        type: string
+      awesIO_version:
+        type: string
+      schema:
+        type: string
+        const: operational_constraints_schema.yml
+      system_type:
+        type: string
+        enum: [pumping_ground_gen, rotary_ground_gen, fly_gen]
+    additionalProperties: false
+
+  wind_envelope:
+    type: object
+    properties:
+      cut_in_wind_speed_m_s:
+        type: number
+        minimum: 0
+      rated_wind_speed_m_s:
+        type: number
+        minimum: 0
+      cut_out_wind_speed_m_s:
+        type: number
+        minimum: 0
+      max_turbulence_intensity:
+        type: number
+        minimum: 0
+        maximum: 1
+      max_wind_shear:
+        type: number
+        minimum: 0
+    additionalProperties: false
+
+  flight_envelope:
+    type: object
+    properties:
+      elevation_angle:
+        type: object
+      azimuth_angle:
+        type: object
+      altitude:
+        type: object
+      flight_path_radius:
+        type: object
+      max_bank_angle_deg:
+        type: number
+      max_acceleration_g:
+        type: number
+      stall_margin:
+        type: number
+    additionalProperties: false
+
+  tether_constraints:
+    type: object
+    properties:
+      max_tether_force_n:
+        type: number
+        minimum: 0
+      min_tether_force_n:
+        type: number
+        minimum: 0
+      tether_length:
+        type: object
+      max_tether_speed_m_s:
+        type: number
+        minimum: 0
+    additionalProperties: false
+
+  cycle_constraints:
+    type: object
+    properties:
+      reel_out_speed:
+        type: object
+      reel_in_speed:
+        type: object
+      reel_out_force:
+        type: object
+      reel_in_force:
+        type: object
+      min_cycle_time_s:
+        type: number
+        minimum: 0
+      max_cycle_time_s:
+        type: number
+        minimum: 0
+      transition_time_s:
+        type: number
+        minimum: 0
+      pattern_constraints:
+        type: object
+    additionalProperties: false
+
+  turbine_constraints:
+    type: object
+    properties:
+      min_rotor_speed_rpm:
+        type: number
+        minimum: 0
+      max_rotor_speed_rpm:
+        type: number
+        minimum: 0
+      rated_rotor_speed_rpm:
+        type: number
+        minimum: 0
+      max_tip_speed_m_s:
+        type: number
+        minimum: 0
+    additionalProperties: false
+
+  electrical_constraints:
+    type: object
+    properties:
+      max_current_a:
+        type: number
+        minimum: 0
+      max_voltage_v:
+        type: number
+        minimum: 0
+      max_power_kw:
+        type: number
+        minimum: 0
+    additionalProperties: false
+
+  safety_constraints:
+    type: object
+    properties:
+      min_ground_clearance_m:
+        type: number
+        minimum: 0
+      exclusion_zone_radius_m:
+        type: number
+        minimum: 0
+      max_flight_duration_h:
+        type: number
+        minimum: 0
+      emergency_landing_speed_m_s:
+        type: number
+        minimum: 0
+    additionalProperties: false
+
+  airspace_constraints:
+    type: object
+    properties:
+      max_altitude_agl_m:
+        type: number
+        minimum: 0
+      max_altitude_msl_m:
+        type: number
+        minimum: 0
+      restricted_zones:
+        type: array
+        items:
+          type: object
+    additionalProperties: false
+
+  terrain_constraints:
+    type: object
+    properties:
+      description:
+        type: string
+      reference_point:
+        type: string
+      azimuth_reference:
+        type: string
+      azimuth_zones:
+        type: array
+        items:
+          type: object
+          required:
+            - azimuth_range_deg
+            - flight_allowed
+          properties:
+            azimuth_range_deg:
+              type: array
+              minItems: 2
+              maxItems: 2
+              items:
+                type: number
+                minimum: 0
+                maximum: 360
+            flight_allowed:
+              type: boolean
+            distance_restrictions:
+              type: array
+              items:
+                type: object
+                required:
+                  - distance_range_m
+                  - min_height_agl_m
+                properties:
+                  distance_range_m:
+                    type: array
+                    minItems: 2
+                    maxItems: 2
+                    items:
+                      type: number
+                      minimum: 0
+                  min_height_agl_m:
+                    type: number
+                    minimum: 0
+                additionalProperties: false
+          additionalProperties: false
+    additionalProperties: false
+
+additionalProperties: false
