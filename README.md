@@ -19,7 +19,7 @@ Currently includes schemas for:
 
 ## Installation
 
-### Installation using pixi
+### Installation using pixi and git
 
 Install pixi: https://github.com/prefix-dev/pixi?tab=readme-ov-file#installation
 
@@ -34,7 +34,7 @@ pixi run validate
 ```
 This will install all of the required Python packages and validate the example files against the included schema files.
 
-### Install Directly from Git Repository (Recommended for Users)
+### Install Directly from Git Repository using pip
 
 Install the latest version from the main branch without cloning:
 
