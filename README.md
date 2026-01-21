@@ -24,12 +24,12 @@ Currently includes schemas for:
 Install pixi: https://github.com/prefix-dev/pixi?tab=readme-ov-file#installation
 
 Fetch the latest version from git:
-```
+```bash
 git clone https://github.com/awegroup/awesIO
 cd awesIO
 ```
 Run the default validation:
-```
+```bash
 pixi run validate
 ```
 This will install all of the required Python packages and validate the example files against the included schema files.
