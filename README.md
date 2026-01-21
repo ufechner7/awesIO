@@ -21,6 +21,8 @@ Currently includes schemas for:
 
 ### Installation using pixi
 
+Install pixi: https://github.com/prefix-dev/pixi?tab=readme-ov-file#installation
+
 Fetch the latest version from git:
 ```
 git clone https://github.com/awegroup/awesIO
