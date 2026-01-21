@@ -3,7 +3,7 @@ name = "awesio"
 version = "0.1.0"
 description = "Input/Output standard for airborne wind energy systems"
 channels = ["conda-forge"]
-platforms = ["linux-64"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
 
 [tasks]
 test = "pytest tests/"
