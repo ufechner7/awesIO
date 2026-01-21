@@ -19,6 +19,19 @@ Currently includes schemas for:
 
 ## Installation
 
+### Installation using pixi
+
+Fetch the latest version from git:
+```
+git clone https://github.com/awegroup/awesIO
+cd awesIO
+```
+Run the default validation:
+```
+pixi run validate
+```
+This will validate the example files against the included schema files.
+
 ### Install Directly from Git Repository (Recommended for Users)
 
 Install the latest version from the main branch without cloning:
