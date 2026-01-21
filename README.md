@@ -32,7 +32,7 @@ Run the default validation:
 ```
 pixi run validate
 ```
-This will validate the example files against the included schema files.
+This will install all of the required Python packages and validate the example files against the included schema files.
 
 ### Install Directly from Git Repository (Recommended for Users)
 
