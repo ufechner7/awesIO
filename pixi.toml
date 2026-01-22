@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "awesio"
 version = "0.1.0"
 description = "Input/Output standard for airborne wind energy systems"
